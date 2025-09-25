@@ -22,7 +22,7 @@
       "MichalCharvat\\A2S\\": "src/"
     }
   },
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "require": {
     "php": ">=7.4"
   },
