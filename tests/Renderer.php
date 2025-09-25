@@ -1,7 +1,6 @@
 <?php
 
 use MichalCharvat\A2S\ASCIIToSVG;
-use MichalCharvat\A2S\CustomObjects;
 
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', true);
@@ -49,12 +48,36 @@ Shapes :
 [st]:       {"a2s:type":"storage","a2s:delref":true}
 DATA;
 
+$data = <<<DATA
+ .-------------------------.
+ |[Logo]                   |
+ | .---.-. .-----. .-----. |
+ | | .-. | +-->  | |  <--| |
+ | | '-' | |  <--| +-->  | |
+ | '---'-' '-----' '-----' |
+ |  ascii     2      svg   |
+ |                         |
+ '-------------------------'
+  https://9vx.org/~dho/a2s/
+
+[Logo]:     {"fill":"#88d","a2s:delref":true}
+DATA;
+
+$data = <<<DATA
+          +----+--------+                                :
+          |    |        |             .----------------. |
+          v    |        |             |[0]             | |
+     #---------+---.    |        o----+----> Waow !    | v
+     |             |<---+       /     |                | ^
+====>| Hello       |           /      '----------------' |
+====>| (svg) World '------.   /  #------#   .-------.    |
+     |    .-----#         |==+   |      |   |       |    |
+     '----#     '---------#      #------#   '-------'
+[0]: {"a2s:link":"https://github.com/schplurtz/a2s","fill":"#CE3B83","stroke":"#F50078","stroke-dasharray":"5 5","stroke-width":4,"a2s:type":"cloud","a2s:delref":true}
+DATA;
+
+
 $a2s = new ASCIIToSVG($data);
-CustomObjects::loadObjects();
-
-var_dump(CustomObjects::$objects);
-die();
-
 $a2s->setDimensionScale(8, 16);
 $a2s->parseGrid();
 echo $a2s->render();

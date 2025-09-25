@@ -61,17 +61,22 @@ class SVGPathParser
 {
     public array $commands = [];
 
-    var /* int */
-        $yyidx = -1;                    /* Index of top element in stack */
-    var /* int */
-        $yyerrcnt;                 /* Shifts left before out of the error */
+    /**
+     * @var int $yyidx
+     */
+    public $yyidx = -1;                    /* Index of top element in stack */
+    public int $yyerrcnt;                 /* Shifts left before out of the error */
     // SVGPathARG_SDECL                /* A place to hold %extra_argument */
-    var /* yyStackEntry */
-        $yystack = array(/* of YYSTACKDEPTH elements */
-    );  /* The parser's stack */
+    /** @var array<SVGPathyyStackEntry> */
+    public array /* yyStackEntry */
+        $yystack = [/* of YYSTACKDEPTH elements */
+    ];  /* The parser's stack */
 
-    var $yyTraceFILE = null;
-    var $yyTracePrompt = null;
+    /**
+     * @var ?resource
+     */
+    public $yyTraceFILE = null;
+    public ?string $yyTracePrompt = null;
 
 
     /* Next is all token values, in a form suitable for use by makeheaders.
@@ -141,9 +146,9 @@ class SVGPathParser
 
     /* since we cant use expressions to initialize these as class
    * constants, we do so during parser init. */
-    var $YY_NO_ACTION;
-    var $YY_ACCEPT_ACTION;
-    var $YY_ERROR_ACTION;
+    public int $YY_NO_ACTION;
+    public int $YY_ACCEPT_ACTION;
+    public int $YY_ERROR_ACTION;
 
     /* Next are that tables used to determine what action to take based on the
 ** current state and lookahead token.  These tables are used to implement
@@ -192,7 +197,7 @@ class SVGPathParser
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-    static $yy_action = array(
+    static array $yy_action = [
         /*     0 */
         2, 39, 44, 45, 46, 47, 48, 49, 50, 51,
         /*    10 */
@@ -221,8 +226,8 @@ class SVGPathParser
         54, 72, 22, 22, 55, 101, 56, 56, 101, 56,
         /*   130 */
         101, 101, 101, 56, 56, 56, 28, 38,
-    );
-    static $yy_lookahead = array(
+    ];
+    static array $yy_lookahead = [
         /*     0 */
         20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
         /*    10 */
@@ -251,10 +256,10 @@ class SVGPathParser
         33, 33, 35, 35, 35, 47, 46, 46, 47, 46,
         /*   130 */
         47, 47, 47, 46, 46, 46, 44, 45,
-    );
+    ];
     const YY_SHIFT_USE_DFLT = -1;
     const YY_SHIFT_MAX = 33;
-    static $yy_shift_ofst = array(
+    static array $yy_shift_ofst = [
         /*     0 */
         70, 18, 18, 74, 74, 74, 74, 74, 74, 74,
         /*    10 */
@@ -263,18 +268,18 @@ class SVGPathParser
         74, 74, 74, 74, 74, 70, 66, 74, 66, 86,
         /*    30 */
         97, 72, 90, 24,
-    );
+    ];
     const YY_REDUCE_USE_DFLT = -21;
     const YY_REDUCE_MAX = 28;
-    static $yy_reduce_ofst = array(
+    static array $yy_reduce_ofst = [
         /*     0 */
         63, -20, -10, -2, -3, 12, 22, 27, 50, 3,
         /*    10 */
         31, 30, 71, 80, 81, 87, 83, 88, 15, 56,
         /*    20 */
         59, 62, 89, 21, 55, 23, 92, 28, 26,
-    );
-    static $yy_default = array(
+    ];
+    static array $yy_default = [
         /*     0 */
         126, 126, 77, 126, 126, 126, 126, 126, 110, 126,
         /*    10 */
@@ -291,48 +296,58 @@ class SVGPathParser
         95, 97, 98, 100, 101, 103, 105, 104, 107, 109,
         /*    70 */
         108, 111, 113, 112,
-    );
+    ];
 
-    /* The next table maps tokens into fallback tokens.  If a construct
-** like the following:
-**
-**      %fallback ID X Y Z.
-**
-** appears in the grammer, then ID becomes a fallback token for X, Y,
-** and Z.  Whenever one of the tokens X, Y, or Z is input to the parser
-** but it does not parse, the type of the token is changed to ID and
-** the parse is retried before an error is thrown.
-*/
-    static $yyFallback = array();
+    /**
+     * The next table maps tokens into fallback tokens.  If a construct
+     ** like the following:
+     **
+     **      %fallback ID X Y Z.
+     **
+     ** appears in the grammer, then ID becomes a fallback token for X, Y,
+     ** and Z.  Whenever one of the tokens X, Y, or Z is input to the parser
+     ** but it does not parse, the type of the token is changed to ID and
+     ** the parse is retried before an error is thrown.
+     */
+    static array $yyFallback = [];
 
-    /*
-** Turn parser tracing on by giving a stream to which to write the trace
-** and a prompt to preface each trace message.  Tracing is turned off
-** by making either argument NULL
-**
-** Inputs:
-** <ul>
-** <li> A FILE* to which trace output should be written.
-**      If NULL, then tracing is turned off.
-** <li> A prefix string written at the beginning of every
-**      line of trace output.  If NULL, then tracing is
-**      turned off.
-** </ul>
-**
-** Outputs:
-** None.
-*/
-    function SVGPathTrace(/* stream */ $TraceFILE, /* string */ $zTracePrompt)
+    /**
+     ** Turn parser tracing on by giving a stream to which to write the trace
+     ** and a prompt to preface each trace message.  Tracing is turned off
+     ** by making either argument NULL
+     **
+     ** Inputs:
+     ** <ul>
+     ** <li> A FILE* to which trace output should be written.
+     **      If NULL, then tracing is turned off.
+     ** <li> A prefix string written at the beginning of every
+     **      line of trace output.  If NULL, then tracing is
+     **      turned off.
+     ** </ul>
+     **
+     ** Outputs:
+     ** None.
+     */
+    /**
+     * @param resource $TraceFILE
+     * @param string|null $zTracePrompt
+     * @return void
+     */
+    function SVGPathTrace(/* stream */ $TraceFILE, ?string $zTracePrompt): void
     {
         $this->yyTraceFILE = $TraceFILE;
         $this->yyTracePrompt = $zTracePrompt;
-        if ($this->yyTraceFILE === null) $this->yyTracePrompt = null;
-        else if ($this->yyTracePrompt === null) $this->yyTraceFILE = null;
+        if ($this->yyTraceFILE === null) {
+            $this->yyTracePrompt = null;
+        } else if ($this->yyTracePrompt === null) {
+            $this->yyTraceFILE = null;
+        }
     }
 
     /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
-    static $yyTokenName = array(
+    /** @var array<string> */
+    static array $yyTokenName = [
         '$', 'ANY', 'MCMD', 'ZCMD',
         'LCMD', 'HCMD', 'VCMD', 'CCMD',
         'SCMD', 'QCMD', 'TCMD', 'ACMD',
@@ -345,11 +360,10 @@ class SVGPathParser
         'vertical_lineto_argument_sequence', 'curveto_argument_sequence', 'curveto_argument', 'smooth_curveto_argument_sequence',
         'smooth_curveto_argument', 'quadratic_bezier_curveto_argument_sequence', 'quadratic_bezier_curveto_argument', 'smooth_quadratic_bezier_curveto_argument_sequence',
         'elliptical_arc_argument_sequence', 'elliptical_arc_argument', 'number',
-    );
+    ];
 
-    /* For tracing reduce actions, the names of all rules are required.
-*/
-    static $yyRuleName = array(
+    /* For tracing reduce actions, the names of all rules are required.*/
+    static array $yyRuleName = [
         /*   0 */
         "svg_path ::= moveto_drawto_command_groups",
         /*   1 */
@@ -454,51 +468,54 @@ class SVGPathParser
         "number ::= FLAG",
         /*  51 */
         "number ::= NEGNUM",
-    );
+    ];
 
-    /*
-** This function returns the symbolic name associated with a token
-** value.
-*/
-    function SVGPathTokenName(/* int */ $tokenType)
+    /**
+     ** This function returns the symbolic name associated with a token
+     ** value.
+     */
+    public function SVGPathTokenName(string $tokenType): string
     {
-        if (isset(self::$yyTokenName[$tokenType]))
+        if (isset(self::$yyTokenName[$tokenType])) {
             return self::$yyTokenName[$tokenType];
+        }
         return "Unknown";
     }
 
-    /* The following function deletes the value associated with a
-** symbol.  The symbol can be either a terminal or nonterminal.
-** "yymajor" is the symbol code, and "yypminor" is a pointer to
-** the value.
-*/
-    private function yy_destructor($yymajor, $yypminor)
+    /**
+     * The following function deletes the value associated with a
+     ** symbol.  The symbol can be either a terminal or nonterminal.
+     ** "yymajor" is the symbol code, and "yypminor" is a pointer to
+     ** the value.
+     */
+    private function yy_destructor($yymajor, $yypminor): void
     {
         switch ($yymajor) {
-            /* Here is inserted the actions which take place when a
-    ** terminal or non-terminal is destroyed.  This can happen
-    ** when the symbol is popped from the stack during a
-    ** reduce or during error processing or when a parser is
-    ** being destroyed before it is finished parsing.
-    **
-    ** Note: during a reduce, the only symbols destroyed are those
-    ** which appear on the RHS of the rule, but which are not used
-    ** inside the C code.
-    */
+            /**
+             **  Here is inserted the actions which take place when a
+             ** terminal or non-terminal is destroyed.  This can happen
+             ** when the symbol is popped from the stack during a
+             ** reduce or during error processing or when a parser is
+             ** being destroyed before it is finished parsing.
+             **
+             ** Note: during a reduce, the only symbols destroyed are those
+             ** which appear on the RHS of the rule, but which are not used
+             ** inside the C code.
+             */
             default:
                 break;   /* If no destructor action specified: do nothing */
         }
     }
 
-    /*
-** Pop the parser's stack once.
-**
-** If there is a destructor routine associated with the token which
-** is popped from the stack, then call it.
-**
-** Return the major token number for the symbol popped.
-*/
-    private function yy_pop_parser_stack()
+    /**
+     ** Pop the parser's stack once.
+     **
+     ** If there is a destructor routine associated with the token which
+     ** is popped from the stack, then call it.
+     **
+     ** Return the major token number for the symbol popped.
+     */
+    private function yy_pop_parser_stack(): ?int
     {
         if ($this->yyidx < 0) return 0;
         $yytos = $this->yystack[$this->yyidx];
@@ -513,44 +530,45 @@ class SVGPathParser
         return $yytos->major;
     }
 
-    /*
-** Deallocate and destroy a parser.  Destructors are all called for
-** all stack elements before shutting the parser down.
-**
-** Inputs:
-** <ul>
-** <li>  A pointer to the parser.  This should be a pointer
-**       obtained from SVGPathAlloc.
-** <li>  A pointer to a function used to reclaim memory obtained
-**       from malloc.
-** </ul>
-*/
-    function __destruct()
+    /**
+     ** Deallocate and destroy a parser.  Destructors are all called for
+     ** all stack elements before shutting the parser down.
+     **
+     ** Inputs:
+     ** <ul>
+     ** <li>  A pointer to the parser.  This should be a pointer
+     **       obtained from SVGPathAlloc.
+     ** <li>  A pointer to a function used to reclaim memory obtained
+     **       from malloc.
+     ** </ul>
+     */
+    public function __destruct()
     {
-        while ($this->yyidx >= 0)
+        while ($this->yyidx >= 0) {
             $this->yy_pop_parser_stack();
+        }
     }
 
-    /*
-** Find the appropriate action for a parser given the terminal
-** look-ahead token iLookAhead.
-**
-** If the look-ahead token is YYNOCODE, then check to see if the action is
-** independent of the look-ahead.  If it is, return the action, otherwise
-** return YY_NO_ACTION.
-*/
+    /**
+     ** Find the appropriate action for a parser given the terminal
+     ** look-ahead token iLookAhead.
+     **
+     ** If the look-ahead token is YYNOCODE, then check to see if the action is
+     ** independent of the look-ahead.  If it is, return the action, otherwise
+     ** return YY_NO_ACTION.
+     */
     private function yy_find_shift_action(
-        $iLookAhead     /* The look-ahead token */
-    )
+        int $iLookAhead     /* The look-ahead token */
+    ): int
     {
         $i = 0;
         $stateno = $this->yystack[$this->yyidx]->stateno;
 
         if ($stateno > self::YY_SHIFT_MAX ||
-            ($i = self::$yy_shift_ofst[$stateno]) == self::YY_SHIFT_USE_DFLT) {
+            ($i = self::$yy_shift_ofst[$stateno]) === self::YY_SHIFT_USE_DFLT) {
             return self::$yy_default[$stateno];
         }
-        if ($iLookAhead == self::YYNOCODE) {
+        if ($iLookAhead === self::YYNOCODE) {
             return $this->YY_NO_ACTION;
         }
         $i += $iLookAhead;
@@ -578,9 +596,8 @@ class SVGPathParser
                 }
             }
             return self::$yy_default[$stateno];
-        } else {
-            return self::$yy_action[$i];
         }
+        return self::$yy_action[$i];
     }
 
     /*
@@ -592,35 +609,34 @@ class SVGPathParser
 ** return YY_NO_ACTION.
 */
     private function yy_find_reduce_action(
-        $stateno,              /* Current state number */
-        $iLookAhead     /* The look-ahead token */
-    )
+        int $stateno,              /* Current state number */
+        int $iLookAhead     /* The look-ahead token */
+    ): int
     {
         $i = 0;
 
         if ($stateno > self::YY_REDUCE_MAX ||
-            ($i = self::$yy_reduce_ofst[$stateno]) == self::YY_REDUCE_USE_DFLT) {
+            ($i = self::$yy_reduce_ofst[$stateno]) === self::YY_REDUCE_USE_DFLT) {
             return self::$yy_default[$stateno];
         }
-        if ($iLookAhead == self::YYNOCODE) {
+        if ($iLookAhead === self::YYNOCODE) {
             return $this->YY_NO_ACTION;
         }
         $i += $iLookAhead;
-        if ($i < 0 || $i >= count(self::$yy_action) || self::$yy_lookahead[$i] != $iLookAhead) {
+        if ($i < 0 || $i >= count(self::$yy_action) || self::$yy_lookahead[$i] !== $iLookAhead) {
             return self::$yy_default[$stateno];
-        } else {
-            return self::$yy_action[$i];
         }
+        return self::$yy_action[$i];
     }
 
     /*
 ** Perform a shift action.
 */
     private function yy_shift(
-        $yyNewState,               /* The new state to shift in */
-        $yyMajor,                  /* The major token to shift in */
-        $yypMinor         /* Pointer ot the minor token to shift in */
-    )
+        int $yyNewState,               /* The new state to shift in */
+        int $yyMajor,                  /* The major token to shift in */
+        ?JLexToken $yypMinor         /* Pointer ot the minor token to shift in */
+    ): void
     {
         $this->yyidx++;
         if (isset($this->yystack[$this->yyidx])) {
@@ -643,23 +659,22 @@ class SVGPathParser
         }
     }
 
-    private function __overflow_dead_code()
-    {
-        /* if the stack can overflow (it can't in the PHP implementation)
-   * Then the following code would be emitted */
-    }
+    /**
+     * The following table contains information about every rule that
+     ** is used during the reduce.
+     ** Rather than pollute memory with a large number of arrays,
+     ** we store both data points in the same array, indexing by
+     ** rule number * 2.
+     * static const struct {
+     * YYCODETYPE lhs;         // Symbol on the left-hand side of the rule
+     * unsigned char nrhs;     // Number of right-hand side symbols in the rule
+     * } yyRuleInfo[] = {
+     */
 
-    /* The following table contains information about every rule that
-** is used during the reduce.
-** Rather than pollute memory with a large number of arrays,
-** we store both data points in the same array, indexing by
-** rule number * 2.
-static const struct {
-  YYCODETYPE lhs;         // Symbol on the left-hand side of the rule
-  unsigned char nrhs;     // Number of right-hand side symbols in the rule
-} yyRuleInfo[] = {
-*/
-    static $yyRuleInfo = array(
+    /**
+     * @var array<int>
+     */
+    static array $yyRuleInfo = [
         16, 1,
         17, 2,
         17, 1,
@@ -712,15 +727,15 @@ static const struct {
         46, 1,
         46, 1,
         46, 1,
-    );
+    ];
 
     /*
 ** Perform a reduce action and the shift that must immediately
 ** follow the reduce.
 */
     private function yy_reduce(
-        $yyruleno                 /* Number of the rule by which to reduce */
-    )
+        int $yyruleno                 /* Number of the rule by which to reduce */
+    ): void
     {
         $yygoto = 0;                     /* The next state */
         $yyact = 0;                      /* The next action */
@@ -746,10 +761,10 @@ static const struct {
             case 15:
 #line 26 "svg-path.y"
                 {
-                    if (count($this->yystack[$this->yyidx + 0]->minor) == 2) {
+                    if (count($this->yystack[$this->yyidx + 0]->minor) === 2) {
                         $this->commands[] = array_merge(array($this->yystack[$this->yyidx + -1]->minor), $this->yystack[$this->yyidx + 0]->minor);
                     } else {
-                        if ($this->yystack[$this->yyidx + -1]->minor->value == 'm') {
+                        if ($this->yystack[$this->yyidx + -1]->minor->value === 'm') {
                             $arr = array('value' => 'l');
                         } else {
                             $arr = array('value' => 'L');
@@ -833,14 +848,26 @@ static const struct {
             case 31:
 #line 80 "svg-path.y"
                 {
-                    $yygotominor = array_merge($this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + -1]->minor, $this->yystack[$this->yyidx + 0]->minor);
+                    $yygotominor = array_merge(
+                        $this->yystack[$this->yyidx + -2]->minor,
+                        $this->yystack[$this->yyidx + -1]->minor,
+                        $this->yystack[$this->yyidx + 0]->minor
+                    );
                 }
 #line 666 "svg-path.php"
                 break;
             case 46:
 #line 131 "svg-path.y"
                 {
-                    $yygotominor = array_merge(array($this->yystack[$this->yyidx + -5]->minor, $this->yystack[$this->yyidx + -4]->minor, $this->yystack[$this->yyidx + -3]->minor, $this->yystack[$this->yyidx + -2]->minor, $this->yystack[$this->yyidx + -1]->minor), $this->yystack[$this->yyidx + 0]->minor);
+                    $yygotominor = array_merge(
+                        [
+                            $this->yystack[$this->yyidx + -5]->minor,
+                            $this->yystack[$this->yyidx + -4]->minor,
+                            $this->yystack[$this->yyidx + -3]->minor,
+                            $this->yystack[$this->yyidx + -2]->minor,
+                            $this->yystack[$this->yyidx + -1]->minor
+                        ], $this->yystack[$this->yyidx + 0]->minor
+                    );
                 }
 #line 671 "svg-path.php"
                 break;
@@ -869,7 +896,7 @@ static const struct {
     /*
 ** The following code executes when the parse fails
 */
-    private function yy_parse_failed()
+    private function yy_parse_failed(): void
     {
         if ($this->yyTraceFILE) {
             fprintf($this->yyTraceFILE, "%sFail!\n", $this->yyTracePrompt);
@@ -883,48 +910,51 @@ static const struct {
 ** The following code executes when a syntax error first occurs.
 */
     private function yy_syntax_error(
-        $yymajor,                   /* The major type of the error token */
-        $yyminor            /* The minor type of the error token */
-    )
+        int        $yymajor,                   /* The major type of the error token */
+        ?JLexToken $yyminor            /* The minor type of the error token */
+    ): void
     {
     }
 
-    /*
-** The following is executed when the parser accepts
-*/
-    private function yy_accept()
+    /**
+     ** The following is executed when the parser accepts
+     */
+    private function yy_accept(): void
     {
         if ($this->yyTraceFILE) {
             fprintf($this->yyTraceFILE, "%sAccept!\n", $this->yyTracePrompt);
         }
         while ($this->yyidx >= 0) $this->yy_pop_parser_stack();
-        /* Here code is inserted which will be executed whenever the
-  ** parser accepts */
+        /**
+         ** Here code is inserted which will be executed whenever the
+         ** parser accepts
+         **/
     }
 
-    /* The main parser program.
-** The first argument is a pointer to a structure obtained from
-** "SVGPathAlloc" which describes the current state of the parser.
-** The second argument is the major token number.  The third is
-** the minor token.  The fourth optional argument is whatever the
-** user wants (and specified in the grammar) and is available for
-** use by the action routines.
-**
-** Inputs:
-** <ul>
-** <li> A pointer to the parser (an opaque structure.)
-** <li> The major token number.
-** <li> The minor token number.
-** <li> An option argument of a grammar-specified type.
-** </ul>
-**
-** Outputs:
-** None.
-*/
+    /**
+     * The main parser program.
+     ** The first argument is a pointer to a structure obtained from
+     ** "SVGPathAlloc" which describes the current state of the parser.
+     ** The second argument is the major token number.  The third is
+     ** the minor token.  The fourth optional argument is whatever the
+     ** user wants (and specified in the grammar) and is available for
+     ** use by the action routines.
+     **
+     ** Inputs:
+     ** <ul>
+     ** <li> A pointer to the parser (an opaque structure.)
+     ** <li> The major token number.
+     ** <li> The minor token number.
+     ** <li> An option argument of a grammar-specified type.
+     ** </ul>
+     **
+     ** Outputs:
+     ** None.
+     */
     function SVGPath(
-        $yymajor,                 /* The major token code number */
-        $yyminor = null           /* The value for the token */
-    )
+        int        $yymajor,                 /* The major token code number */
+        ?JLexToken $yyminor = null           /* The value for the token */
+    ): void
     {
         $yyact = 0;            /* The parser action. */
         $yyendofinput = 0;     /* True if we are at the end of input */
@@ -937,13 +967,13 @@ static const struct {
             $ent = new SVGPathyyStackEntry;
             $ent->stateno = 0;
             $ent->major = 0;
-            $this->yystack = array(0 => $ent);
+            $this->yystack = [0 => $ent];
 
             $this->YY_NO_ACTION = self::YYNSTATE + self::YYNRULE + 2;
             $this->YY_ACCEPT_ACTION = self::YYNSTATE + self::YYNRULE + 1;
             $this->YY_ERROR_ACTION = self::YYNSTATE + self::YYNRULE;
         }
-        $yyendofinput = ($yymajor == 0);
+        $yyendofinput = ($yymajor === 0);
 
         if ($this->yyTraceFILE) {
             fprintf($this->yyTraceFILE, "%sInput %s\n", $this->yyTracePrompt,
@@ -962,35 +992,35 @@ static const struct {
                 }
             } else if ($yyact < self::YYNSTATE + self::YYNRULE) {
                 $this->yy_reduce($yyact - self::YYNSTATE);
-            } else if ($yyact == $this->YY_ERROR_ACTION) {
+            } else if ($yyact === $this->YY_ERROR_ACTION) {
                 if ($this->yyTraceFILE) {
                     fprintf($this->yyTraceFILE, "%sSyntax Error!\n", $this->yyTracePrompt);
                 }
                 if (self::YYERRORSYMBOL) {
-                    /* A syntax error has occurred.
-      ** The response to an error depends upon whether or not the
-      ** grammar defines an error token "ERROR".
-      **
-      ** This is what we do if the grammar does define ERROR:
-      **
-      **  * Call the %syntax_error function.
-      **
-      **  * Begin popping the stack until we enter a state where
-      **    it is legal to shift the error symbol, then shift
-      **    the error symbol.
-      **
-      **  * Set the error count to three.
-      **
-      **  * Begin accepting and shifting new tokens.  No new error
-      **    processing will occur until three tokens have been
-      **    shifted successfully.
-      **
-      */
+                    /** A syntax error has occurred.
+                     ** The response to an error depends upon whether or not the
+                     ** grammar defines an error token "ERROR".
+                     **
+                     ** This is what we do if the grammar does define ERROR:
+                     **
+                     **  * Call the %syntax_error function.
+                     **
+                     **  * Begin popping the stack until we enter a state where
+                     **    it is legal to shift the error symbol, then shift
+                     **    the error symbol.
+                     **
+                     **  * Set the error count to three.
+                     **
+                     **  * Begin accepting and shifting new tokens.  No new error
+                     **    processing will occur until three tokens have been
+                     **    shifted successfully.
+                     **
+                     */
                     if ($this->yyerrcnt < 0) {
                         $this->yy_syntax_error($yymajor, $yyminor);
                     }
                     $yymx = $this->yystack[$this->yyidx]->major;
-                    if ($yymx == self::YYERRORSYMBOL || $yyerrorhit) {
+                    if ($yymx === self::YYERRORSYMBOL || $yyerrorhit) {
                         if ($this->yyTraceFILE) {
                             fprintf($this->yyTraceFILE, "%sDiscard input token %s\n",
                                 $this->yyTracePrompt, self::$yyTokenName[$yymajor]);
@@ -1000,33 +1030,34 @@ static const struct {
                     } else {
                         while (
                             $this->yyidx >= 0 &&
-                            $yymx != self::YYERRORSYMBOL &&
+                            $yymx !== self::YYERRORSYMBOL &&
                             ($yyact = $this->yy_find_reduce_action(
                                 $this->yystack[$this->yyidx]->stateno,
                                 self::YYERRORSYMBOL)) >= self::YYNSTATE
                         ) {
                             $this->yy_pop_parser_stack();
                         }
-                        if ($this->yyidx < 0 || $yymajor == 0) {
+                        if ($this->yyidx < 0 || $yymajor === 0) {
                             $this->yy_destructor($yymajor, $yyminor);
                             $this->yy_parse_failed();
                             $yymajor = self::YYNOCODE;
-                        } else if ($yymx != self::YYERRORSYMBOL) {
+                        } else if ($yymx !== self::YYERRORSYMBOL) {
                             $this->yy_shift($yyact, self::YYERRORSYMBOL, 0);
                         }
                     }
                     $this->yyerrcnt = 3;
                     $yyerrorhit = 1;
                 } else {  /* YYERRORSYMBOL is not defined */
-                    /* This is what we do if the grammar does not define ERROR:
-      **
-      **  * Report an error message, and throw away the input token.
-      **
-      **  * If the input token is $, then fail the parse.
-      **
-      ** As before, subsequent error messages are suppressed until
-      ** three input tokens have been successfully shifted.
-      */
+                    /**
+                     **  This is what we do if the grammar does not define ERROR:
+                     **
+                     **  * Report an error message, and throw away the input token.
+                     **
+                     **  * If the input token is $, then fail the parse.
+                     **
+                     ** As before, subsequent error messages are suppressed until
+                     ** three input tokens have been successfully shifted.
+                     */
                     if ($this->yyerrcnt <= 0) {
                         $this->yy_syntax_error($yymajor, $yyminor);
                     }
@@ -1041,6 +1072,6 @@ static const struct {
                 $this->yy_accept();
                 $yymajor = self::YYNOCODE;
             }
-        } while ($yymajor != self::YYNOCODE && $this->yyidx >= 0);
+        } while ($yymajor !== self::YYNOCODE && $this->yyidx >= 0);
     }
 }

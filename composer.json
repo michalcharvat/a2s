@@ -22,6 +22,11 @@
       "MichalCharvat\\A2S\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "MichalCharvat\\Test\\": "tests/"
+    }
+  },
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.4"
@@ -34,6 +39,7 @@
     "slevomat/coding-standard": "^7.0"
   },
   "scripts": {
+    "test": "./vendor/phpunit/phpunit/phpunit -c phpunit.xml",
     "analyse": "./vendor/phpstan/phpstan/phpstan analyse -c phpstan.neon --memory-limit 2G"
   },
   "config": {

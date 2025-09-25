@@ -62,23 +62,28 @@ namespace MichalCharvat\A2S;
  */
 class SVGPath
 {
-    private $options;
-    private $points;
-    private $ticks;
-    private $flags;
-    private $text;
-    private $name;
+    /** @var array<string, string> */
+    private ?array $options;
 
-    private static $id = 0;
+    /** @var array<Point>|null  */
+    private ?array $points;
+    private ?array $ticks;
+    private ?int $flags;
+
+    /** @var array<SVGText>|null */
+    private ?array $text;
+    private ?int $name;
+
+    private static int $id = 0;
 
     const CLOSED = 0x1;
 
     public function __construct()
     {
-        $this->options = array();
-        $this->points = array();
-        $this->text = array();
-        $this->ticks = array();
+        $this->options = [];
+        $this->points = [];
+        $this->text = [];
+        $this->ticks = [];
         $this->flags = 0;
         $this->name = self::$id++;
     }
@@ -97,7 +102,7 @@ class SVGPath
    *
    * This should only be called when we close a polygon.
    */
-    public function orderPoints()
+    public function orderPoints(): void
     {
         $pPoints = count($this->points);
 
@@ -115,26 +120,26 @@ class SVGPath
             }
         }
 
-        /*
-     * If our top left isn't at the 0th index, it is at the end. If
-     * there are bits after it, we need to cut those and put them at
-     * the front.
-     */
-        if ($minIdx != 0) {
+        /**
+         * If our top left isn't at the 0th index, it is at the end. If
+         * there are bits after it, we need to cut those and put them at
+         * the front.
+         */
+        if ($minIdx !== 0) {
             $startPoints = array_splice($this->points, $minIdx);
             $this->points = array_merge($startPoints, $this->points);
         }
     }
 
-    /*
-   * Useful for recursive walkers when speculatively trying a direction.
-   */
-    public function popPoint()
+    /**
+     * Useful for recursive walkers when speculatively trying a direction.
+     */
+    public function popPoint(): void
     {
         array_pop($this->points);
     }
 
-    public function addPoint($x, $y, $flags = Point::POINT)
+    public function addPoint(int $x, int $y, int $flags = Point::POINT): bool
     {
         $p = new Point($x, $y);
 
@@ -143,18 +148,18 @@ class SVGPath
      * must be closed.
      */
         if (count($this->points) > 0) {
-            if ($this->points[0]->x == $p->x && $this->points[0]->y == $p->y) {
+            if ($this->points[0]->x === $p->x && $this->points[0]->y === $p->y) {
                 $this->flags |= self::CLOSED;
                 return true;
             }
 
-            /*
-      * For the purposes of this library, paths should never intersect each
-      * other. Even in the case of closing the polygon, we do not store the
-      * final coordinate twice.
-      */
+            /**
+             * For the purposes of this library, paths should never intersect each
+             * other. Even in the case of closing the polygon, we do not store the
+             * final coordinate twice.
+             */
             foreach ($this->points as $point) {
-                if ($point->x == $p->x && $point->y == $p->y) {
+                if ($point->x === $p->x && $point->y === $p->y) {
                     return true;
                 }
             }
@@ -166,52 +171,52 @@ class SVGPath
         return false;
     }
 
-    /*
-   * It's useful to be able to know the points in a shape.
-   */
-    public function getPoints()
+    /**
+     * It's useful to be able to know the points in a shape.
+     */
+    public function getPoints(): ?array
     {
         return $this->points;
     }
 
-    /*
-   * Add a marker to a line. The third argument specifies which marker to use,
-   * and this depends on the orientation of the line. Due to the way the line
-   * parser works, we may have to use an inverted representation.
-   */
-    public function addMarker($x, $y, $t)
+    /**
+     * Add a marker to a line. The third argument specifies which marker to use,
+     * and this depends on the orientation of the line. Due to the way the line
+     * parser works, we may have to use an inverted representation.
+     */
+    public function addMarker(int $x, int $y, int $t): void
     {
         $p = new Point($x, $y);
         $p->flags |= $t;
         $this->points[] = $p;
     }
 
-    public function addTick($x, $y, $t)
+    public function addTick(int $x, int $y, int $t): void
     {
         $p = new Point($x, $y);
         $p->flags |= $t;
         $this->ticks[] = $p;
     }
 
-    /*
-   * Is this path closed?
-   */
-    public function isClosed()
+    /**
+     * Is this path closed?
+     */
+    public function isClosed(): bool
     {
-        return ($this->flags & self::CLOSED);
+        return (bool)($this->flags & self::CLOSED);
     }
 
-    public function addText($t)
+    public function addText(SVGText $t): void
     {
         $this->text[] = $t;
     }
 
-    public function getText()
+    public function getText(): array
     {
         return $this->text;
     }
 
-    public function getID()
+    public function getID(): int
     {
         return $this->name;
     }
@@ -220,17 +225,21 @@ class SVGPath
    * Set options as a JSON string. Specified as a merge operation so that it
    * can be called after an individual setOption call.
    */
-    public function setOptions($opt)
+    public function setOptions(array $opt): void
     {
         $this->options = array_merge($this->options, $opt);
     }
 
-    public function setOption($opt, $val)
+    public function setOption(string $opt, string $val): void
     {
         $this->options[$opt] = $val;
     }
 
-    public function getOption($opt)
+    /**
+     * @param string $opt
+     * @return array|mixed|string|null
+     */
+    public function getOption(string $opt)
     {
         if (isset($this->options[$opt])) {
             return $this->options[$opt];
@@ -239,15 +248,15 @@ class SVGPath
         return null;
     }
 
-    /*
-   * Does the given point exist within this polygon? Since we can
-   * theoretically have some complex concave and convex polygon edges in the
-   * same shape, we need to do a full point-in-polygon test. This algorithm
-   * seems like the standard one. See: http://alienryderflex.com/polygon/
-   */
-    public function hasPoint($x, $y)
+    /**
+     * Does the given point exist within this polygon? Since we can
+     * theoretically have some complex concave and convex polygon edges in the
+     * same shape, we need to do a full point-in-polygon test. This algorithm
+     * seems like the standard one. See: http://alienryderflex.com/polygon/
+     */
+    public function hasPoint(int $x, int $y): bool
     {
-        if ($this->isClosed() == false) {
+        if ($this->isClosed() === false) {
             return false;
         }
 
@@ -271,20 +280,20 @@ class SVGPath
         return $oddNodes;
     }
 
-    /*
-   * Apply a matrix transformation to the coordinates ($x, $y). The
-   * multiplication is implemented on the matrices:
-   *
-   * | a b c |   | x |
-   * | d e f | * | y |
-   * | 0 0 1 |   | 1 |
-   *
-   * Additional information on the transformations and what each R,C in the
-   * transformation matrix represents, see:
-   *
-   * http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
-   */
-    private function matrixTransform($matrix, $x, $y)
+    /**
+     * Apply a matrix transformation to the coordinates ($x, $y). The
+     * multiplication is implemented on the matrices:
+     *
+     * | a b c |   | x |
+     * | d e f | * | y |
+     * | 0 0 1 |   | 1 |
+     *
+     * Additional information on the transformations and what each R,C in the
+     * transformation matrix represents, see:
+     *
+     * http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
+     */
+    private function matrixTransform(array $matrix, int $x, int $y): array
     {
         $xyMat = array(array($x), array($y), array(1));
         $newXY = array(array());
@@ -305,23 +314,23 @@ class SVGPath
         return array($newXY[0][0], $newXY[1][0], $newXY[2][0]);
     }
 
-    /*
-   * Translate the X and Y coordinates. tX and tY specify the distance to
-   * transform.
-   */
-    private function translateTransform($tX, $tY, $x, $y)
+    /**
+     * Translate the X and Y coordinates. tX and tY specify the distance to
+     * transform.
+     */
+    private function translateTransform(int $tX, int $tY, int $x, int $y): array
     {
         $matrix = array(array(1, 0, $tX), array(0, 1, $tY), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
     }
 
-    /*
-   * Scale transformations are implemented by applying the scale to the X and
-   * Y coordinates. One unit in the new coordinate system equals $s[XY] units
-   * in the old system. Thus, if you want to double the size of an object on
-   * both axes, you sould call scaleTransform(0.5, 0.5, $x, $y)
-   */
-    private function scaleTransform($sX, $sY, $x, $y)
+    /**
+     * Scale transformations are implemented by applying the scale to the X and
+     * Y coordinates. One unit in the new coordinate system equals $s[XY] units
+     * in the old system. Thus, if you want to double the size of an object on
+     * both axes, you sould call scaleTransform(0.5, 0.5, $x, $y)
+     */
+    private function scaleTransform(int $sX, int $sY, int $x, int $y): array
     {
         $matrix = array(array($sX, 0, 0), array(0, $sY, 0), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
@@ -332,11 +341,11 @@ class SVGPath
    * are not specified, the coordinate is rotated around 0,0. The angle
    * is specified in degrees.
    */
-    private function rotateTransform($angle, $x, $y, $cX = 0, $cY = 0)
+    private function rotateTransform(float $angle, int $x, int $y, int $cX = 0, int $cY = 0): array
     {
-        $angle = $angle * (pi() / 180);
-        if ($cX != 0 || $cY != 0) {
-            list ($x, $y) = $this->translateTransform($cX, $cY, $x, $y);
+        $angle *= (M_PI / 180);
+        if ($cX !== 0 || $cY !== 0) {
+            [$x, $y] = $this->translateTransform($cX, $cY, $x, $y);
         }
 
         $matrix = array(array(cos($angle), -sin($angle), 0),
@@ -344,8 +353,8 @@ class SVGPath
             array(0, 0, 1));
         $ret = $this->matrixTransform($matrix, $x, $y);
 
-        if ($cX != 0 || $cY != 0) {
-            list ($x, $y) = $this->translateTransform(-$cX, -$cY, $ret[0], $ret[1]);
+        if ($cX !== 0 || $cY !== 0) {
+            [$x, $y] = $this->translateTransform(-$cX, -$cY, $ret[0], $ret[1]);
             $ret[0] = $x;
             $ret[1] = $y;
         }
@@ -353,32 +362,32 @@ class SVGPath
         return $ret;
     }
 
-    /*
-   * Skews along the X axis at specified angle. The angle is specified in
-   * degrees.
-   */
-    private function skewXTransform($angle, $x, $y)
+    /**
+     * Skews along the X axis at specified angle. The angle is specified in
+     * degrees.
+     */
+    private function skewXTransform(float $angle, int $x, int $y): array
     {
-        $angle = $angle * (pi() / 180);
+        $angle *= (M_PI / 180);
         $matrix = array(array(1, tan($angle), 0), array(0, 1, 0), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
     }
 
-    /*
-   * Skews along the Y axis at specified angle. The angle is specified in
-   * degrees.
-   */
-    private function skewYTransform($angle, $x, $y)
+    /**
+     * Skews along the Y axis at specified angle. The angle is specified in
+     * degrees.
+     */
+    private function skewYTransform(float $angle, int $x, int $y): array
     {
-        $angle = $angle * (pi() / 180);
+        $angle *= (M_PI / 180);
         $matrix = array(array(1, 0, 0), array(tan($angle), 1, 0), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
     }
 
-    /*
-   * Apply a transformation to a point $p.
-   */
-    private function applyTransformToPoint($txf, $p, $args)
+    /**
+     * Apply a transformation to a point $p.
+     */
+    private function applyTransformToPoint(string $txf, Point $p, array $args): array
     {
         switch ($txf) {
             case 'translate':
@@ -390,9 +399,8 @@ class SVGPath
             case 'rotate':
                 if (count($args) > 1) {
                     return $this->rotateTransform($args[0], $p->x, $p->y, $args[1], $args[2]);
-                } else {
-                    return $this->rotateTransform($args[0], $p->x, $p->y);
                 }
+                return $this->rotateTransform($args[0], $p->x, $p->y);
 
             case 'skewX':
                 return $this->skewXTransform($args[0], $p->x, $p->y);
@@ -400,13 +408,15 @@ class SVGPath
             case 'skewY':
                 return $this->skewYTransform($args[0], $p->x, $p->y);
         }
+
+        throw new \RuntimeException('Invalid transform');
     }
 
     /*
    * Apply the transformation function $txf to all coordinates on path $p
    * providing $args as arguments to the transformation function.
    */
-    private function applyTransformToPath($txf, &$p, $args)
+    private function applyTransformToPath(string $txf, array &$p, array $args): void
     {
         $pathCmds = count($p['path']);
         $curPoint = new Point(0, 0);
@@ -624,7 +634,7 @@ class SVGPath
         }
     }
 
-    public function render()
+    public function render(): string
     {
         $startPoint = array_shift($this->points);
         $endPoint = $this->points[count($this->points) - 1];
@@ -757,18 +767,23 @@ class SVGPath
                 $cX = $p->x;
                 $cY = $p->y;
 
+                $sX = 0;
+                $sY = 0;
+                $eX = 0;
+                $eY = 0;
+
                 /* Need next point to determine which way to turn */
-                if ($i == count($this->points) - 1) {
+                if ($i === count($this->points) - 1) {
                     $nP = $startPoint;
                 } else {
                     $nP = $this->points[$i + 1];
                 }
 
-                if ($prevP->x == $p->x) {
-                    /*
-           * If we are on the same vertical axis, our starting X coordinate
-           * is the same as the control point coordinate.
-           */
+                if ($prevP->x === $p->x) {
+                    /**
+                     * If we are on the same vertical axis, our starting X coordinate
+                     * is the same as the control point coordinate.
+                     */
                     $sX = $p->x;
 
                     /* Offset start point from control point in the proper direction */
@@ -830,11 +845,11 @@ class SVGPath
             $this->options["marker-end"] = "url(#iPointer)";
         }
 
-        /*
-     * SVG objects without a fill will be transparent, and this looks so
-     * terrible with the drop-shadow effect. Any objects that aren't filled
-     * automatically get a white fill.
-     */
+        /**
+         * SVG objects without a fill will be transparent, and this looks so
+         * terrible with the drop-shadow effect. Any objects that aren't filled
+         * automatically get a white fill.
+         */
         if ($this->isClosed() && !isset($this->options['fill'])) {
             $this->options['fill'] = '#fff';
         }
@@ -842,7 +857,7 @@ class SVGPath
         $out_p = "\t<path id=\"path{$this->name}\" ";
         foreach ($this->options as $opt => $val) {
             if (strpos($opt, 'a2s:', 0) === 0) {
-                if ($opt == 'a2s:link') {
+                if ($opt === 'a2s:link') {
                     $alnk = $val;
                 }
                 continue;

@@ -59,12 +59,13 @@ namespace MichalCharvat\A2S;
 
 class JLexToken
 {
-    public $line;
-    public $col;
-    public $value;
-    public $type;
+    public ?int $line;
+    public ?int $col;
+    public ?string $value;
+    public int $type;
+    public ?string $filename;
 
-    function __construct($type, $value = null, $line = null, $col = null)
+    function __construct(int $type, ?string $value = null, ?int $line = null, ?int $col = null)
     {
         $this->line = $line;
         $this->col = $col;

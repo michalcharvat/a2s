@@ -63,53 +63,54 @@ namespace MichalCharvat\A2S;
 
 class SVGText
 {
-    private $options;
-    private $string;
-    private $point;
-    private $name;
+    private array $options;
+    private ?string $string;
+    private Point $point;
+    private int $name;
 
-    private static $id = 0;
+    private static int $id = 0;
 
-    private static function svgEntities($str)
+    private static function svgEntities(string $str): string
     {
-        /* <, >, and & replacements are valid without a custom DTD:
-     * https://www.w3.org/TR/xml/#syntax
-     *
-     * We want to replace these in text without confusing SVG.
-     */
+        /**
+         * <, >, and & replacements are valid without a custom DTD:
+         * https://www.w3.org/TR/xml/#syntax
+         *
+         * We want to replace these in text without confusing SVG.
+         */
         $s = array('&', '<', '>');
         $r = array('&amp;', '&lt;', '&gt;');
         return str_replace($s, $r, $str);
     }
 
-    public function __construct($x, $y)
+    public function __construct(float $x, float $y)
     {
         $this->point = new Point($x, $y);
         $this->name = self::$id++;
-        $this->options = array();
+        $this->options = [];
     }
 
-    public function setOption($opt, $val)
+    public function setOption(string $opt, string $val): void
     {
         $this->options[$opt] = $val;
     }
 
-    public function getID()
+    public function getID(): int
     {
         return $this->name;
     }
 
-    public function getPoint()
+    public function getPoint(): Point
     {
         return $this->point;
     }
 
-    public function setString($string)
+    public function setString(string $string): void
     {
         $this->string = $string;
     }
 
-    public function render()
+    public function render(): string
     {
         $out = "<text x=\"{$this->point->x}\" y=\"{$this->point->y}\" id=\"text{$this->name}\" ";
         foreach ($this->options as $opt => $val) {
@@ -119,7 +120,7 @@ class SVGText
             $out .= "$opt=\"$val\" ";
         }
         $out .= ">";
-        $out .= SVGText::svgEntities($this->string);
+        $out .= self::svgEntities($this->string ?? '');
         $out .= "</text>\n";
         return $out;
     }

@@ -59,14 +59,12 @@ namespace MichalCharvat\A2S;
 
 class ASCIIToSVG
 {
-    public $blurDropShadow = true;
-    public $fontFamily = "Consolas,Monaco,Anonymous Pro,Anonymous,Bitstream Sans Mono,monospace";
+    public bool $blurDropShadow = true;
+    public string $fontFamily = "Consolas,Monaco,Anonymous Pro,Anonymous,Bitstream Sans Mono,monospace";
+    private array $grid;
 
-    private $rawData;
-    private $grid;
-
-    private $svgObjects;
-    private $clearCorners;
+    private SVGGroup $svgObjects;
+    private array $clearCorners;
 
     private ?array $commands;
 
@@ -78,14 +76,11 @@ class ASCIIToSVG
     const DIR_NE = 0x10;
     const DIR_SE = 0x20;
 
-    public function __construct($data)
+    public function __construct(string $data)
     {
-        /* For debugging purposes */
-        $this->rawData = $data;
-
         CustomObjects::loadObjects();
 
-        $this->clearCorners = array();
+        $this->clearCorners = [];
 
         /**
          * Parse out any command references. These need to be at the bottom of the
@@ -108,7 +103,7 @@ class ASCIIToSVG
          * that grid. The (0, 0) coordinate on this grid is top-left, just as it
          * is in images.
          */
-        $this->grid = explode("\n", $data);
+        $this->grid = (array)explode("\n", $data);
         foreach ($this->grid as $k => $line) {
             $this->grid[$k] = preg_split('//u', $line, null, PREG_SPLIT_NO_EMPTY);
         }
@@ -120,19 +115,14 @@ class ASCIIToSVG
    * This is kind of a stupid and hacky way to do this, but this allows setting
    * the default scale of one grid space on the X and Y axes.
    */
-    public function setDimensionScale($x, $y)
+    public function setDimensionScale(int $x, int $y): void
     {
         $o = Scale::getInstance();
         $o->setScale($x, $y);
     }
 
-    public function dump()
-    {
-        var_export($this);
-    }
-
     /* Render out what we've done!  */
-    public function render()
+    public function render(): string
     {
         $o = Scale::getInstance();
 
@@ -214,7 +204,7 @@ SVG;
    * this point, all we have left should be text, which we can pick up and
    * place.
    */
-    public function parseGrid()
+    public function parseGrid(): void
     {
         $this->parseBoxes();
         $this->parseLines();
@@ -234,7 +224,7 @@ SVG;
    * then vertical, we complete the shape in a clockwise order (which is
    * important for the Bezier curve generation.
    */
-    private function parseBoxes()
+    private function parseBoxes(): void
     {
         /* Set up our box group  */
         $this->svgObjects->pushGroup('boxes');
@@ -347,7 +337,7 @@ SVG;
    * a line is found, it is cleared immediately (but leaving any control points
    * in case there were any intersections.
    */
-    private function parseLines()
+    private function parseLines(): void
     {
         /* Set standard line options */
         $this->svgObjects->pushGroup('lines');
@@ -379,10 +369,10 @@ SVG;
 
                 $char = $this->getChar($r, $c);
                 switch ($char) {
-                    /*
-         * Do marker characters first. These are the easiest because they are
-         * basically guaranteed to represent the start of the line.
-         */
+                    /**
+                     * Do marker characters first. These are the easiest because they are
+                     * basically guaranteed to represent the start of the line.
+                     */
                     case '<':
                         $e = $this->getChar($r, $c + 1);
                         if ($this->isEdge($e, self::DIR_RIGHT) || $this->isCorner($e)) {
@@ -430,22 +420,22 @@ SVG;
                         }
                         break;
 
-                    /*
-         * Edges are handled specially. We have to look at the context of the
-         * edge to determine whether it's the start of a line. A vertical edge
-         * can appear as the start of a line in the following circumstances:
-         *
-         * +-------------      +--------------     +----    | (s)
-         * |                   |                   |        |
-         * |      | (s)        +-------+           |(s)     |
-         * +------+                    | (s)
-         *
-         * From this we can extrapolate that we are a starting edge if our
-         * southern neighbor is a vertical edge or corner, but we have no line
-         * material to our north (and vice versa). This logic does allow for
-         * the southern / northern neighbor to be part of a separate
-         * horizontal line.
-         */
+                    /**
+                     * Edges are handled specially. We have to look at the context of the
+                     * edge to determine whether it's the start of a line. A vertical edge
+                     * can appear as the start of a line in the following circumstances:
+                     *
+                     * +-------------      +--------------     +----    | (s)
+                     * |                   |                   |        |
+                     * |      | (s)        +-------+           |(s)     |
+                     * +------+                    | (s)
+                     *
+                     * From this we can extrapolate that we are a starting edge if our
+                     * southern neighbor is a vertical edge or corner, but we have no line
+                     * material to our north (and vice versa). This logic does allow for
+                     * the southern / northern neighbor to be part of a separate
+                     * horizontal line.
+                     */
                     case ':':
                         $line->setOption('stroke-dasharray', '5 5');
                     /* FALLTHROUGH */
@@ -463,12 +453,12 @@ SVG;
                         }
                         break;
 
-                    /*
-         * Horizontal edges have the same properties for search as vertical
-         * edges, except we need to look east / west. The diagrams for the
-         * vertical case are still accurate to visualize this case; just
-         * mentally turn them 90 degrees clockwise.
-         */
+                    /**
+                     * Horizontal edges have the same properties for search as vertical
+                     * edges, except we need to look east / west. The diagrams for the
+                     * vertical case are still accurate to visualize this case; just
+                     * mentally turn them 90 degrees clockwise.
+                     */
                     case '=':
                         $line->setOption('stroke-dasharray', '5 5');
                     /* FALLTHROUGH */
@@ -486,12 +476,12 @@ SVG;
                         }
                         break;
 
-                    /*
-         * We can only find diagonals going north or south and east. This is
-         * simplified due to the fact that they have no corners. We are
-         * guaranteed to run into their westernmost point or their relevant
-         * marker.
-         */
+                    /**
+                     * We can only find diagonals going north or south and east. This is
+                     * simplified due to the fact that they have no corners. We are
+                     * guaranteed to run into their westernmost point or their relevant
+                     * marker.
+                     */
                     case '/':
                         $ne = $this->getChar($r - 1, $c + 1);
                         if ($ne === '/' || $ne === '^' || $ne === '>') {
@@ -506,14 +496,14 @@ SVG;
                         }
                         break;
 
-                    /*
-         * The corner case must consider all four directions. Though a
-         * reasonable person wouldn't use slant corners for this, they are
-         * considered corners, so it kind of makes sense to handle them the
-         * same way. For this case, envision the starting point being a corner
-         * character in both the horizontal and vertical case. And then
-         * mentally overlay them and consider that :).
-         */
+                    /**
+                     * The corner case must consider all four directions. Though a
+                     * reasonable person wouldn't use slant corners for this, they are
+                     * considered corners, so it kind of makes sense to handle them the
+                     * same way. For this case, envision the starting point being a corner
+                     * character in both the horizontal and vertical case. And then
+                     * mentally overlay them and consider that :).
+                     */
                     case '+':
                     case '#':
                         $ne = $this->getChar($r - 1, $c + 1);
@@ -531,23 +521,23 @@ SVG;
                         $w = $this->getChar($r, $c - 1);
                         $s = $this->getChar($r + 1, $c);
                         $e = $this->getChar($r, $c + 1);
-                        if (($w === '=' || $w === '-') && $n != '|' && $n != ':' && $w != '-' &&
-                            $e != '=' && $e != '|' && $s != ':') {
+                        if (($w === '=' || $w === '-') && $n !== '|' && $n !== ':' && $w !== '-' &&
+                            $e !== '=' && $e !== '|' && $s !== ':') {
                             $dir = self::DIR_LEFT;
-                        } elseif (($e === '=' || $e === '-') && $n != '|' && $n != ':' &&
-                            $w != '-' && $w != '=' && $s != '|' && $s != ':') {
+                        } elseif (($e === '=' || $e === '-') && $n !== '|' && $n !== ':' &&
+                            $w !== '-' && $w !== '=' && $s !== '|' && $s !== ':') {
                             $dir = self::DIR_RIGHT;
-                        } elseif (($s === '|' || $s === ':') && $n != '|' && $n != ':' &&
-                            $w != '-' && $w != '=' && $e != '-' && $e != '=' &&
-                            (($char != '.' && $char != "'") ||
-                                ($char === '.' && $s != '.') ||
-                                ($char === "'" && $s != "'"))) {
+                        } elseif (($s === '|' || $s === ':') && $n !== '|' && $n !== ':' &&
+                            $w !== '-' && $w !== '=' && $e !== '-' && $e !== '=' &&
+                            (($char !== '.' && $char !== "'") ||
+                                ($char === '.' && $s !== '.') ||
+                                ($char === "'" && $s !== "'"))) {
                             $dir = self::DIR_DOWN;
-                        } elseif (($n === '|' || $n === ':') && $s != '|' && $s != ':' &&
-                            $w != '-' && $w != '=' && $e != '-' && $e != '=' &&
-                            (($char != '.' && $char != "'") ||
-                                ($char === '.' && $s != '.') ||
-                                ($char === "'" && $s != "'"))) {
+                        } elseif (($n === '|' || $n === ':') && $s !== '|' && $s !== ':' &&
+                            $w !== '-' && $w !== '=' && $e !== '-' && $e !== '=' &&
+                            (($char !== '.' && $char !== "'") ||
+                                ($char === '.' && $s !== '.') ||
+                                ($char === "'" && $s !== "'"))) {
                             $dir = self::DIR_UP;
                         }
                         break;
@@ -561,10 +551,10 @@ SVG;
                         $line->addPoint($c, $r);
                     }
 
-                    /*
-           * The walk routine may attempt to add the point again, so skip it.
-           * If we don't, we can miss the line or end up with just a point.
-           */
+                    /**
+                     * The walk routine may attempt to add the point again, so skip it.
+                     * If we don't, we can miss the line or end up with just a point.
+                     */
                     if ($dir === self::DIR_UP) {
                         $rInc = -1;
                         $cInc = 0;
@@ -585,17 +575,17 @@ SVG;
                         $cInc = 1;
                     }
 
-                    /*
-           * Walk the points of this line. Note we don't use wallFollow; we are
-           * operating under the assumption that lines do not meander. (And, in
-           * any event, that algorithm is intended to find a closed object.)
-           */
+                    /**
+                     * Walk the points of this line. Note we don't use wallFollow; we are
+                     * operating under the assumption that lines do not meander. (And, in
+                     * any event, that algorithm is intended to find a closed object.)
+                     */
                     $this->walk($line, $r + $rInc, $c + $cInc, $dir);
 
-                    /*
-           * Remove it so that we don't confuse any other lines. This leaves
-           * corners in tact, still.
-           */
+                    /**
+                     * Remove it so that we don't confuse any other lines. This leaves
+                     * corners in tact, still.
+                     */
                     $this->clearObject($line);
                     $this->svgObjects->addObject($line);
 
@@ -616,7 +606,7 @@ SVG;
    * have to figure out what box it lives in (if any) and do all sorts of
    * color calculation magic.
    */
-    private function parseText()
+    private function parseText(): void
     {
         $o = Scale::getInstance();
 
@@ -647,7 +637,7 @@ SVG;
         foreach ($this->grid as $row => $line) {
             $cols = count($line);
             for ($i = 0; $i < $cols; $i++) {
-                if ($this->getChar($row, $i) != ' ') {
+                if ($this->getChar($row, $i) !== ' ') {
                     /* More magic numbers that probably need research. */
                     $t = new SVGText($i - .6, $row + 0.3);
 
@@ -662,12 +652,12 @@ SVG;
                             $boxPoints = $boxes[$j]->getPoints();
                             $boxTL = $boxPoints[0];
 
-                            /*
-               * This text is in this box, but it may still be in a more
-               * specific nested box. Find the box with the highest top
-               * left X,Y coordinate. Keep a queue of boxes in case the top
-               * most box doesn't have a fill.
-               */
+                            /**
+                             * This text is in this box, but it may still be in a more
+                             * specific nested box. Find the box with the highest top
+                             * left X,Y coordinate. Keep a queue of boxes in case the top
+                             * most box doesn't have a fill.
+                             */
                             if ($boxTL->y > $maxPoint->y && $boxTL->x > $maxPoint->x) {
                                 $maxPoint->x = $boxTL->x;
                                 $maxPoint->y = $boxTL->y;
@@ -677,10 +667,10 @@ SVG;
                     }
 
                     if (count($boxQueue) > 0) {
-                        /*
-             * Work backwards through the boxes to find the box with the most
-             * specific fill.
-             */
+                        /**
+                         * Work backwards through the boxes to find the box with the most
+                         * specific fill.
+                         */
                         for ($j = count($boxQueue) - 1; $j >= 0; $j--) {
                             $fill = $boxQueue[$j]->getOption('fill');
 
@@ -688,18 +678,20 @@ SVG;
                                 continue;
                             }
 
-                            if (substr($fill, 0, 1) != '#') {
+                            if (substr($fill, 0, 1) !== '#') {
                                 if (!isset($GLOBALS['colors'][strtolower($fill)])) {
                                     continue;
-                                } else {
-                                    $fill = $GLOBALS['colors'][strtolower($fill)];
                                 }
+                                $fill = $GLOBALS['colors'][strtolower($fill)];
                             } else {
                                 if (strlen($fill) != 4 && strlen($fill) != 7) {
                                     continue;
                                 }
                             }
 
+                            $cR = 0;
+                            $cG = 0;
+                            $cB = 0;
 
                             if ($fill) {
                                 /* Attempt to parse the fill color */
@@ -713,13 +705,13 @@ SVG;
                                     $cB = hexdec(substr($fill, 5, 2));
                                 }
 
-                                /*
-                 * This magic is gleaned from the working group paper on
-                 * accessibility at http://www.w3.org/TR/AERT. The recommended
-                 * contrast is a brightness difference of at least 125 and a
-                 * color difference of at least 500. Since our default color
-                 * is black, that makes the color difference easier.
-                 */
+                                /**
+                                 * This magic is gleaned from the working group paper on
+                                 * accessibility at http://www.w3.org/TR/AERT. The recommended
+                                 * contrast is a brightness difference of at least 125 and a
+                                 * color difference of at least 500. Since our default color
+                                 * is black, that makes the color difference easier.
+                                 */
                                 $bFill = (($cR * 299) + ($cG * 587) + ($cB * 114)) / 1000;
                                 $bDiff = $cR + $cG + $cB;
                                 $bText = 0;
@@ -745,7 +737,7 @@ SVG;
 
                     /* We found a stringy character, eat it and the rest. */
                     $str = $this->getChar($row, $i++);
-                    while ($i < count($line) && $this->getChar($row, $i) != ' ') {
+                    while ($i < count($line) && $this->getChar($row, $i) !== ' ') {
                         $str .= $this->getChar($row, $i++);
                         /* Eat up to 1 space */
                         if ($this->getChar($row, $i) === ' ') {
@@ -760,10 +752,10 @@ SVG;
 
                     $t->setString($str);
 
-                    /*
-           * If we were in a box, group with the box. Otherwise it gets its
-           * own group.
-           */
+                    /**
+                     * If we were in a box, group with the box. Otherwise it gets its
+                     * own group.
+                     */
                     if (count($boxQueue) > 0) {
                         $t->setOption('stroke', 'none');
                         $t->setOption('style',
@@ -777,11 +769,11 @@ SVG;
         }
     }
 
-    /*
-   * Allow specifying references that target an object starting at grid point
-   * (ROW,COL). This allows styling of lines, boxes, or any text object.
-   */
-    private function injectCommands()
+    /**
+     * Allow specifying references that target an object starting at grid point
+     * (ROW,COL). This allows styling of lines, boxes, or any text object.
+     */
+    private function injectCommands(): void
     {
         $boxes = $this->svgObjects->getGroup('boxes');
         $lines = $this->svgObjects->getGroup('lines');
@@ -824,17 +816,21 @@ SVG;
         }
     }
 
-    /*
-   * A generic, recursive line walker. This walker makes the assumption that
-   * lines want to go in the direction that they are already heading. I'm
-   * sure that there are ways to formulate lines to screw this walker up,
-   * but it does a good enough job right now.
-   */
-    private function walk($path, $row, $col, $dir, $d = 0)
+    /**
+     * A generic, recursive line walker. This walker makes the assumption that
+     * lines want to go in the direction that they are already heading. I'm
+     * sure that there are ways to formulate lines to screw this walker up,
+     * but it does a good enough job right now.
+     *
+     * @return null
+     */
+    private function walk(SVGPath $path, int $row, int $col, int $dir, int $d = 0)
     {
         $d++;
         $r = $row;
         $c = $col;
+        $cInc = 0;
+        $rInc = 0;
 
         if ($dir === self::DIR_RIGHT || $dir === self::DIR_LEFT) {
             $cInc = ($dir === self::DIR_RIGHT) ? 1 : -1;
@@ -873,14 +869,14 @@ SVG;
 
             if ($path->isClosed()) {
                 $path->popPoint();
-                return;
+                return null;
             }
 
-            /*
-       * Attempt first to continue in the current direction. If we can't,
-       * try to go in any direction other than the one opposite of where
-       * we just came from -- no backtracking.
-       */
+            /**
+             * Attempt first to continue in the current direction. If we can't,
+             * try to go in any direction other than the one opposite of where
+             * we just came from -- no backtracking.
+             */
             $n = $this->getChar($r - 1, $c);
             $s = $this->getChar($r + 1, $c);
             $e = $this->getChar($r, $c + 1);
@@ -892,24 +888,25 @@ SVG;
 
             if ($this->isCorner($next) || $this->isEdge($next, $dir)) {
                 return $this->walk($path, $r + $rInc, $c + $cInc, $dir, $d);
-            } elseif ($dir != self::DIR_DOWN &&
+            }
+            if ($dir !== self::DIR_DOWN &&
                 ($this->isCorner($n) || $this->isEdge($n, self::DIR_UP))) {
                 /* Can't turn up into bottom corner */
-                if (($cur != '.' && $cur != "'") || ($cur === '.' && $n != '.') ||
-                    ($cur === "'" && $n != "'")) {
+                if (($cur !== '.' && $cur !== "'") || ($cur === '.' && $n !== '.') ||
+                    ($cur === "'" && $n !== "'")) {
                     return $this->walk($path, $r - 1, $c, self::DIR_UP, $d);
                 }
-            } elseif ($dir != self::DIR_UP &&
+            } elseif ($dir !== self::DIR_UP &&
                 ($this->isCorner($s) || $this->isEdge($s, self::DIR_DOWN))) {
                 /* Can't turn down into top corner */
-                if (($cur != '.' && $cur != "'") || ($cur === '.' && $s != '.') ||
-                    ($cur === "'" && $s != "'")) {
+                if (($cur !== '.' && $cur !== "'") || ($cur === '.' && $s !== '.') ||
+                    ($cur === "'" && $s !== "'")) {
                     return $this->walk($path, $r + 1, $c, self::DIR_DOWN, $d);
                 }
-            } elseif ($dir != self::DIR_LEFT &&
+            } elseif ($dir !== self::DIR_LEFT &&
                 ($this->isCorner($e) || $this->isEdge($e, self::DIR_RIGHT))) {
                 return $this->walk($path, $r, $c + 1, self::DIR_RIGHT, $d);
-            } elseif ($dir != self::DIR_RIGHT &&
+            } elseif ($dir !== self::DIR_RIGHT &&
                 ($this->isCorner($w) || $this->isEdge($w, self::DIR_LEFT))) {
                 return $this->walk($path, $r, $c - 1, self::DIR_LEFT, $d);
             } elseif ($dir === self::DIR_SE &&
@@ -922,15 +919,16 @@ SVG;
         } elseif ($this->isMarker($cur)) {
             /* We found a marker! Add it. */
             $path->addMarker($c, $r, Point::SMARKER);
-            return;
+            return null;
         } else {
             /*
        * Not a corner, not a marker, and we already ate edges. Whatever this
        * is, it is not part of the line.
        */
             $path->addPoint($c - $cInc, $r - $rInc);
-            return;
+            return null;
         }
+        return null;
     }
 
     /**
@@ -947,8 +945,10 @@ SVG;
      * if its first turn cannot be a right turn to moving down, the object
      * cannot be a valid polygon. It also maintains an internal list of points
      * it has already visited, and refuses to visit any point twice.
+     *
+     * @return null
      */
-    private function wallFollow(SVGPath $path, $r, $c, int $dir, array $bucket = [], int $d = 0)
+    private function wallFollow(SVGPath $path, int $r, int $c, int $dir, array $bucket = [], int $d = 0)
     {
         $d++;
         $rInc = 0;
@@ -971,13 +971,13 @@ SVG;
         /* We 'key' our location by catting r and c together */
         $key = "{$r}{$c}";
         if (isset($bucket[$key])) {
-            return;
+            return null;
         }
 
-        /*
-     * When we run into a corner, we have to make a somewhat complicated
-     * decision about which direction to turn.
-     */
+        /**
+         * When we run into a corner, we have to make a somewhat complicated
+         * decision about which direction to turn.
+         */
         if ($this->isBoxCorner($cur)) {
             if (!isset($bucket[$key])) {
                 $bucket[$key] = 0;
@@ -996,7 +996,7 @@ SVG;
             }
 
             if ($path->isClosed() || $pointExists) {
-                return;
+                return null;
             }
 
             /**
@@ -1030,7 +1030,7 @@ SVG;
                 } else {
                     /* There is no right hand turn for us; this isn't a valid start */
                     if ($d === 1) {
-                        return;
+                        return null;
                     }
                 }
             } elseif ($dir === self::DIR_DOWN) {
@@ -1066,26 +1066,26 @@ SVG;
                 $bucket[$key] |= $newDir;
                 $this->wallFollow($path, $r + $rMod, $c + $cMod, $newDir, $bucket, $d);
                 if ($path->isClosed()) {
-                    return;
+                    return null;
                 }
             }
 
-            /*
-       * Unfortunately, we couldn't complete the search by turning right,
-       * so we need to pick a different direction. Note that this will also
-       * eventually cause us to continue in the direction we were already
-       * going. We make sure that we don't go in the direction opposite of
-       * the one in which we're already headed, or an any direction we've
-       * already travelled for this point (we may have hit it from an
-       * earlier branch). We accept the first closing polygon as the
-       * "correct" one for this object.
-       */
+            /**
+             * Unfortunately, we couldn't complete the search by turning right,
+             * so we need to pick a different direction. Note that this will also
+             * eventually cause us to continue in the direction we were already
+             * going. We make sure that we don't go in the direction opposite of
+             * the one in which we're already headed, or an any direction we've
+             * already travelled for this point (we may have hit it from an
+             * earlier branch). We accept the first closing polygon as the
+             * "correct" one for this object.
+             */
             if ($dir != self::DIR_RIGHT && !($bucket[$key] & self::DIR_LEFT) &&
                 ($this->isBoxEdge($w, self::DIR_LEFT) || $this->isBoxCorner($w))) {
                 $bucket[$key] |= self::DIR_LEFT;
                 $this->wallFollow($path, $r, $c - 1, self::DIR_LEFT, $bucket, $d);
                 if ($path->isClosed()) {
-                    return;
+                    return null;
                 }
             }
             if ($dir != self::DIR_LEFT && !($bucket[$key] & self::DIR_RIGHT) &&
@@ -1093,48 +1093,48 @@ SVG;
                 $bucket[$key] |= self::DIR_RIGHT;
                 $this->wallFollow($path, $r, $c + 1, self::DIR_RIGHT, $bucket, $d);
                 if ($path->isClosed()) {
-                    return;
+                    return null;
                 }
             }
             if ($dir != self::DIR_DOWN && !($bucket[$key] & self::DIR_UP) &&
                 ($this->isBoxEdge($n, self::DIR_UP) || $this->isBoxCorner($n))) {
-                if (($cur != '.' && $cur != "'") || ($cur === '.' && $n != '.') ||
-                    ($cur === "'" && $n != "'")) {
+                if (($cur !== '.' && $cur !== "'") || ($cur === '.' && $n !== '.') ||
+                    ($cur === "'" && $n !== "'")) {
                     /* We can't turn into another bottom edge. */
                     $bucket[$key] |= self::DIR_UP;
                     $this->wallFollow($path, $r - 1, $c, self::DIR_UP, $bucket, $d);
                     if ($path->isClosed()) {
-                        return;
+                        return null;
                     }
                 }
             }
             if ($dir != self::DIR_UP && !($bucket[$key] & self::DIR_DOWN) &&
                 ($this->isBoxEdge($s, self::DIR_DOWN) || $this->isBoxCorner($s))) {
-                if (($cur != '.' && $cur != "'") || ($cur === '.' && $s != '.') ||
-                    ($cur === "'" && $s != "'")) {
+                if (($cur !== '.' && $cur !== "'") || ($cur === '.' && $s !== '.') ||
+                    ($cur === "'" && $s !== "'")) {
                     /* We can't turn into another top edge. */
                     $bucket[$key] |= self::DIR_DOWN;
                     $this->wallFollow($path, $r + 1, $c, self::DIR_DOWN, $bucket, $d);
                     if ($path->isClosed()) {
-                        return;
+                        return null;
                     }
                 }
             }
 
-            /*
-       * If we get here, the path doesn't close in any direction from this
-       * point (it's probably a line extension). Get rid of the point from our
-       * path and go back to the last one.
-       */
+            /**
+             * If we get here, the path doesn't close in any direction from this
+             * point (it's probably a line extension). Get rid of the point from our
+             * path and go back to the last one.
+             */
             $path->popPoint();
-            return;
-        } elseif ($this->isMarker($this->getChar($r, $c))) {
-            /* Marker is part of a line, not a wall to close. */
-            return;
-        } else {
-            /* We landed on some whitespace or something; this isn't a closed path */
-            return;
+            return null;
         }
+        if ($this->isMarker($this->getChar($r, $c))) {
+            /* Marker is part of a line, not a wall to close. */
+            return null;
+        }
+        /* We landed on some whitespace or something; this isn't a closed path */
+        return null;
     }
 
     /*
@@ -1142,7 +1142,7 @@ SVG;
    * function retains corners in "clearCorners" to be cleaned up before we do
    * text parsing.
    */
-    private function clearObject($obj)
+    private function clearObject(SVGPath $obj): void
     {
         $points = $obj->getPoints();
         $closed = $obj->isClosed();
@@ -1193,22 +1193,22 @@ SVG;
                 }
             } elseif ($nP != null && $closed === false && $p->gridX != $nP->gridX &&
                 $p->gridY != $nP->gridY) {
-                /*
-         * This is a diagonal line starting from the westernmost point. It
-         * must contain max(p->gridY, nP->gridY) - min(p->gridY, nP->gridY)
-         * segments, and we can tell whether to go north or south depending
-         * on which side of zero p->gridY - nP->gridY lies. There are no
-         * corners in diagonals, so we don't have to keep those around.
-         */
+                /**
+                 * This is a diagonal line starting from the westernmost point. It
+                 * must contain max(p->gridY, nP->gridY) - min(p->gridY, nP->gridY)
+                 * segments, and we can tell whether to go north or south depending
+                 * on which side of zero p->gridY - nP->gridY lies. There are no
+                 * corners in diagonals, so we don't have to keep those around.
+                 */
                 $c = $p->gridX;
                 $r = $p->gridY;
                 $rInc = ($p->gridY > $nP->gridY) ? -1 : 1;
                 $bound = max($p->gridY, $nP->gridY) - min($p->gridY, $nP->gridY);
 
-                /*
-         * This looks like an off-by-one, but it is not. This clears the
-         * corner, if one exists.
-         */
+                /**
+                 * This looks like an off-by-one, but it is not. This clears the
+                 * corner, if one exists.
+                 */
                 for ($j = 0; $j <= $bound; $j++) {
                     $char = $this->getChar($r, $c);
                     if ($char === '/' || $char === "\\" || $this->isMarker($char)) {
@@ -1235,7 +1235,7 @@ SVG;
      * gives you a good method for specifying *tons* of information about the
      * object.
      */
-    private function findCommands(SVGPath $box)
+    private function findCommands(SVGPath $box): string
     {
         $points = $box->getPoints();
         $sX = $points[0]->gridX + 1;
@@ -1286,7 +1286,7 @@ SVG;
      * Extremely useful debugging information to figure out what has been
      * parsed, especially when used in conjunction with clearObject.
      */
-    private function dumpGrid(): void
+    public function dumpGrid(): void
     {
         foreach ($this->grid as $lines) {
             echo implode('', $lines) . "\n";

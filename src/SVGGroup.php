@@ -64,56 +64,56 @@ namespace MichalCharvat\A2S;
 
 class SVGGroup
 {
-    private $groups;
-    private $curGroup;
-    private $groupStack;
-    private $options;
+    private array $groups;
+    private ?string $curGroup;
+    private array $groupStack;
+    private array $options;
 
     public function __construct()
     {
-        $this->groups = array();
-        $this->groupStack = array();
-        $this->options = array();
+        $this->groups = [];
+        $this->groupStack = [];
+        $this->options = [];
     }
 
-    public function getGroup($groupName)
+    public function getGroup(string $groupName): array
     {
         return $this->groups[$groupName];
     }
 
-    public function pushGroup($groupName)
+    public function pushGroup(string $groupName): void
     {
         if (!isset($this->groups[$groupName])) {
-            $this->groups[$groupName] = array();
-            $this->options[$groupName] = array();
+            $this->groups[$groupName] = [];
+            $this->options[$groupName] = [];
         }
 
         $this->groupStack[] = $groupName;
         $this->curGroup = $groupName;
     }
 
-    public function popGroup()
+    public function popGroup(): void
     {
-        /*
-     * Remove the last group and fetch the current one. array_pop will return
-     * NULL for an empty array, so this is safe to do when only one element
-     * is left.
-     */
+        /**
+         * Remove the last group and fetch the current one. array_pop will return
+         * NULL for an empty array, so this is safe to do when only one element
+         * is left.
+         */
         array_pop($this->groupStack);
         $this->curGroup = array_pop($this->groupStack);
     }
 
-    public function addObject($o)
+    public function addObject(object $o): void
     {
         $this->groups[$this->curGroup][] = $o;
     }
 
-    public function setOption($opt, $val)
+    public function setOption(string $opt, string $val): void
     {
         $this->options[$this->curGroup][$opt] = $val;
     }
 
-    public function render()
+    public function render(): string
     {
         $out = '';
 

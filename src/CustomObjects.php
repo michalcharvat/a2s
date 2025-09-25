@@ -88,7 +88,10 @@ namespace MichalCharvat\A2S;
 
 class CustomObjects
 {
-    public static $objects = array();
+    /**
+     * @var array<string, array<int, array{name: string, width: int, height: int, paths: array<int|string>}>> $objects
+     */
+    public static array $objects = [];
 
     /**
      * Closures / callable function names / whatever for integrating non-default
@@ -110,10 +113,10 @@ class CustomObjects
      */
     public static $loadObjsFn = null;
 
-    protected static $cacheTime = null;
+    protected static ?int $cacheTime = null;
 
 
-    public static function loadObjects()
+    public static function loadObjects(): void
     {
         global $conf;
 
@@ -130,10 +133,11 @@ class CustomObjects
             return;
         }
         if (is_readable($cacheFile) && is_readable($dir)) {
-            static::$cacheTime = filemtime($cacheFile);
+            static::$cacheTime = filemtime($cacheFile) ?: null;
 
             if (filemtime($dir) <= filemtime($cacheFile)) {
-                self::$objects = unserialize(file_get_contents($cacheFile));
+                $fileContent = file_get_contents($cacheFile);
+                self::$objects = unserialize($fileContent);
                 return;
             }
         } else if (file_exists($cacheFile)) {
@@ -216,9 +220,17 @@ class CustomObjects
         }
     }
 
+    /**
+     * @param string $path
+     * @return array<int, array>
+     * @throws \Exception
+     */
     private static function parsePath(string $path): array
     {
         $stream = fopen("data://text/plain,{$path}", 'rb');
+        if ($stream === false) {
+            throw new \RuntimeException("Unable to open file {$path}");
+        }
 
         $P = new SVGPathParser();
         $S = new Yylex($stream);

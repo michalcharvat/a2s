@@ -67,20 +67,27 @@ class Yylex extends JLexBase
     const YY_END = 2;
     const YY_NO_ANCHOR = 4;
     const YY_BOL = 128;
-    var $YY_EOF = 129;
+    protected int $YY_EOF = 129;
 
     /* w/e */
 
-    function __construct($stream)
+    /**
+     * @param resource $stream
+     */
+    public function __construct($stream)
     {
         parent::__construct($stream);
         $this->yy_lexical_state = self::YYINITIAL;
     }
 
     const YYINITIAL = 0;
+
+    /** @var array<int>  */
     protected static array $yy_state_dtrans = [
         0
     ];
+
+    /** @var array<int>  */
     protected static array $yy_acpt = [
         /* 0 */
         self::YY_NOT_ACCEPT,
@@ -260,19 +267,19 @@ class Yylex extends JLexBase
             if ($yy_initial && $this->yy_at_bol) $yy_lookahead = self::YY_BOL;
             else $yy_lookahead = $this->yy_advance();
             $yy_next_state = self::$yy_nxt[self::$yy_rmap[$yy_state]][self::$yy_cmap[$yy_lookahead]];
-            if ($this->YY_EOF == $yy_lookahead && true == $yy_initial) {
+            if ($this->YY_EOF === $yy_lookahead && true === $yy_initial) {
                 return null;
             }
-            if (self::YY_F != $yy_next_state) {
+            if (self::YY_F !== $yy_next_state) {
                 $yy_state = $yy_next_state;
                 $yy_initial = false;
                 $yy_this_accept = self::$yy_acpt[$yy_state];
-                if (self::YY_NOT_ACCEPT != $yy_this_accept) {
+                if (self::YY_NOT_ACCEPT !== $yy_this_accept) {
                     $yy_last_accept_state = $yy_state;
                     $this->yy_mark_end();
                 }
             } else {
-                if (self::YY_NO_STATE == $yy_last_accept_state) {
+                if (self::YY_NO_STATE === $yy_last_accept_state) {
                     throw new \Exception("Lexical Error: Unmatched Input.");
                 } else {
                     $yy_anchor = self::$yy_acpt[$yy_last_accept_state];

@@ -66,13 +66,13 @@ namespace MichalCharvat\A2S;
 
 class Point
 {
-    public $gridX;
-    public $gridY;
+    public ?float $gridX;
+    public ?float $gridY;
 
-    public $x;
-    public $y;
+    public ?int $x;
+    public ?int $y;
 
-    public $flags;
+    public ?int $flags;
 
     const POINT = 0x1;
     const CONTROL = 0x2;
@@ -81,7 +81,7 @@ class Point
     const TICK = 0x10;
     const DOT = 0x20;
 
-    public function __construct($x, $y)
+    public function __construct(float $x, float $y)
     {
         $this->flags = 0;
 

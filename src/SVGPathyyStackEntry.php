@@ -73,11 +73,7 @@ namespace MichalCharvat\A2S;
 
 class SVGPathyyStackEntry
 {
-    var /* int */
-        $stateno;       /* The state-number */
-    var /* int */
-        $major;         /* The major token value.  This is the code
-                     ** number for the token at this stack level */
-    var $minor; /* The user-supplied minor token value.  This
-                     ** is the value of the token  */
+    public int $stateno;       /* The state-number */
+    public ?int $major;         /* The major token value.  This is the code ** number for the token at this stack level */
+    public $minor;         /* The user-supplied minor token value.  This ** is the value of the token  */
 }

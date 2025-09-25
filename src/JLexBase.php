@@ -65,28 +65,31 @@ class JLexBase
     const YY_START = 1;
     const YY_END = 2;
     const YY_NO_ANCHOR = 4;
-    const YYEOF = -1;
+    protected int $YY_EOF;
 
-    protected $YY_BOL;
-    protected $YY_EOF;
-
+    /**
+     * @var resource
+     */
     protected $yy_reader;
-    protected $yy_buffer;
-    protected $yy_buffer_read;
-    protected $yy_buffer_index;
-    protected $yy_buffer_start;
-    protected $yy_buffer_end;
-    protected $yychar = 0;
-    protected $yycol = 0;
-    protected $yyline = 0;
-    protected $yy_at_bol;
-    protected $yy_lexical_state;
-    protected $yy_last_was_cr = false;
-    protected $yy_count_lines = false;
-    protected $yy_count_chars = false;
-    protected $yyfilename = null;
+    protected ?string $yy_buffer;
+    protected int $yy_buffer_read;
+    protected int $yy_buffer_index;
+    protected int $yy_buffer_start;
+    protected int $yy_buffer_end;
+    protected int $yychar = 0;
+    protected int $yycol = 0;
+    protected int $yyline = 0;
+    protected bool $yy_at_bol;
+    protected int $yy_lexical_state;
+    protected bool $yy_last_was_cr = false;
+    protected bool $yy_count_lines = false;
+    protected bool $yy_count_chars = false;
+    protected ?string $yyfilename = null;
 
-    function __construct($stream)
+    /**
+     * @param resource $stream
+     */
+    public function __construct($stream)
     {
         $this->yy_reader = $stream;
         $meta = stream_get_meta_data($stream);
@@ -106,12 +109,12 @@ class JLexBase
         $this->yy_at_bol = true;
     }
 
-    protected function yybegin($state)
+    protected function yybegin(int $state): void
     {
         $this->yy_lexical_state = $state;
     }
 
-    protected function yy_advance()
+    protected function yy_advance(): int
     {
         if ($this->yy_buffer_index < $this->yy_buffer_read) {
             if (!isset($this->yy_buffer[$this->yy_buffer_index])) {
@@ -119,7 +122,7 @@ class JLexBase
             }
             return ord($this->yy_buffer[$this->yy_buffer_index++]);
         }
-        if ($this->yy_buffer_start != 0) {
+        if ($this->yy_buffer_start !== 0) {
             /* shunt */
             $j = $this->yy_buffer_read - $this->yy_buffer_start;
             $this->yy_buffer = substr($this->yy_buffer, $this->yy_buffer_start, $j);
@@ -129,31 +132,35 @@ class JLexBase
             $this->yy_buffer_index = $j;
 
             $data = fread($this->yy_reader, 8192);
-            if ($data === false || !strlen($data)) return $this->YY_EOF;
+            if ($data === false || !strlen($data)) {
+                return $this->YY_EOF;
+            }
             $this->yy_buffer .= $data;
             $this->yy_buffer_read .= strlen($data);
         }
 
         while ($this->yy_buffer_index >= $this->yy_buffer_read) {
             $data = fread($this->yy_reader, 8192);
-            if ($data === false || !strlen($data)) return $this->YY_EOF;
+            if ($data === false || !strlen($data)) {
+                return $this->YY_EOF;
+            }
             $this->yy_buffer .= $data;
             $this->yy_buffer_read .= strlen($data);
         }
         return ord($this->yy_buffer[$this->yy_buffer_index++]);
     }
 
-    protected function yy_move_end()
+    protected function yy_move_end(): void
     {
-        if ($this->yy_buffer_end > $this->yy_buffer_start &&
-            $this->yy_buffer[$this->yy_buffer_end - 1] == "\n")
+        if ($this->yy_buffer_end > $this->yy_buffer_start && $this->yy_buffer[$this->yy_buffer_end - 1] === "\n") {
             $this->yy_buffer_end--;
-        if ($this->yy_buffer_end > $this->yy_buffer_start &&
-            $this->yy_buffer[$this->yy_buffer_end - 1] == "\r")
+        }
+        if ($this->yy_buffer_end > $this->yy_buffer_start && $this->yy_buffer[$this->yy_buffer_end - 1] === "\r") {
             $this->yy_buffer_end--;
+        }
     }
 
-    protected function yy_mark_start()
+    protected function yy_mark_start(): void
     {
         if ($this->yy_count_lines || $this->yy_count_chars) {
             if ($this->yy_count_lines) {
@@ -163,7 +170,7 @@ class JLexBase
                         $this->yycol = 0;
                     }
                     if ("\r" === $this->yy_buffer[$i]) {
-                        ++$yyline;
+                        ++$this->yyline;
                         $this->yycol = 0;
                         $this->yy_last_was_cr = true;
                     } else {
@@ -179,12 +186,12 @@ class JLexBase
         $this->yy_buffer_start = $this->yy_buffer_index;
     }
 
-    protected function yy_mark_end()
+    protected function yy_mark_end(): void
     {
         $this->yy_buffer_end = $this->yy_buffer_index;
     }
 
-    protected function yy_to_mark()
+    protected function yy_to_mark(): void
     {
         #echo "yy_to_mark: setting buffer index to ", $this->yy_buffer_end, "\n";
         $this->yy_buffer_index = $this->yy_buffer_end;
@@ -195,40 +202,44 @@ class JLexBase
                 2029 /* unicode PS */ == $this->yy_buffer[$this->yy_buffer_end - 1]);
     }
 
-    protected function yytext()
+    protected function yytext(): string
     {
         return substr($this->yy_buffer, $this->yy_buffer_start,
             $this->yy_buffer_end - $this->yy_buffer_start);
     }
 
-    protected function yylength()
+    protected function yylength(): int
     {
         return $this->yy_buffer_end - $this->yy_buffer_start;
     }
 
-    static $yy_error_string = array(
+    static array $yy_error_string = [
         'INTERNAL' => "Error: internal error.\n",
         'MATCH' => "Error: Unmatched input.\n"
-    );
+    ];
 
-    protected function yy_error($code, $fatal)
+    protected function yy_error(string $code, bool $fatal = false): void
     {
         print self::$yy_error_string[$code];
         flush();
-        if ($fatal) throw new \Exception("JLex fatal error " . self::$yy_error_string[$code]);
+        if ($fatal) {
+            throw new \Exception("JLex fatal error " . self::$yy_error_string[$code]);
+        }
     }
 
     /* creates an annotated token */
-    function createToken($type = null)
+    public function createToken(?int $type = null): JLexToken
     {
-        if ($type === null) $type = $this->yytext();
+        if ($type === null) {
+            $type = $this->yytext();
+        }
         $tok = new JLexToken($type);
         $this->annotateToken($tok);
         return $tok;
     }
 
     /* annotates a token with a value and source positioning */
-    function annotateToken(JLexToken $tok)
+    public function annotateToken(JLexToken $tok): void
     {
         $tok->value = $this->yytext();
         $tok->col = $this->yycol;
