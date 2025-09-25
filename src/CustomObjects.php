@@ -188,7 +188,7 @@ class CustomObjects
                 $file = "{$dir}/{$ent}";
                 $base = substr($ent, 0, -5);
                 if (substr($ent, -5) === '.path' && is_readable($file)) {
-                    if (isset(self::$objects[$base]) &&
+                    if (isset(self::$objects[$base], self::$cacheTime) &&
                         filemtime($file) <= self::$cacheTime) {
                         continue;
                     }
