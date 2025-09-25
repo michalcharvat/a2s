@@ -1,0 +1,44 @@
+{
+  "name": "michalcharvat/a2s",
+  "description": "ASCII to SVG",
+  "type": "library",
+  "keywords": [
+    "ascii",
+    "svg"
+  ],
+  "authors": [
+    {
+      "name": "Devon H. O'Dell",
+      "email": "devon.odell@gmail.com"
+    },
+    {
+      "name": "Michal Charvat",
+      "email": "info@michalcharvat.cz"
+    }
+  ],
+  "license": "BSD",
+  "autoload": {
+    "psr-4": {
+      "MichalCharvat\\A2S\\": "src/"
+    }
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.2.0",
+    "phpunit/phpunit": "^9.5",
+    "jetbrains/phpstorm-attributes": "^1.0",
+    "squizlabs/php_codesniffer": "*",
+    "slevomat/coding-standard": "^7.0"
+  },
+  "scripts": {
+    "analyse": "./vendor/phpstan/phpstan/phpstan analyse -c phpstan.neon --memory-limit 2G"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}
