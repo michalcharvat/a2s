@@ -76,6 +76,21 @@ $data = <<<DATA
 [0]: {"a2s:link":"https://github.com/schplurtz/a2s","fill":"#CE3B83","stroke":"#F50078","stroke-dasharray":"5 5","stroke-width":4,"a2s:type":"cloud","a2s:delref":true}
 DATA;
 
+$data = <<<DATA
+---
+title: Home
+---
+.-------------------------.
+|                         |
+| .---.-. .-----. .-----. |
+| | .-. | +-->  | |  <--| |
+| | '-' | |  <--| +-->  | |
+| '---'-' '-----' '-----' |
+|  ascii     2      svg   |
+|                         |
+'-------------------------'
+DATA;
+
 
 $a2s = new ASCIIToSVG($data);
 $a2s->setDimensionScale(8, 16);
