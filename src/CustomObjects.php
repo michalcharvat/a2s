@@ -116,7 +116,8 @@ class CustomObjects
     public static function loadObjects()
     {
         global $conf;
-        $cacheFile = $conf['cachedir'] . '/plugin.asciitosvg.objcache';
+        //$cacheFile = $conf['cachedir'] . '/plugin.asciitosvg.objcache';
+        $cacheFile = tempnam(sys_get_temp_dir(), 'plugin.asciitosvg.objcache');
         $dir = dirname(__DIR__) . '/objects';
         if (is_callable(self::$loadCacheFn)) {
             /**

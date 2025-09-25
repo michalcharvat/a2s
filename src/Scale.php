@@ -67,8 +67,8 @@ final class Scale
 {
     private static ?Scale $instance = null;
 
-    public int $xScale;
-    public int $yScale;
+    public int $xScale = 1;
+    public int $yScale = 1;
 
     private function __construct()
     {

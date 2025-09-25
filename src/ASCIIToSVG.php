@@ -87,13 +87,13 @@ class ASCIIToSVG
 
         $this->clearCorners = array();
 
-        /*
-     * Parse out any command references. These need to be at the bottom of the
-     * diagram due to the way they're removed. Format is:
-     * [identifier] optional-colon optional-spaces ({json-blob})\n
-     *
-     * The JSON blob may not contain objects as values or the regex will break.
-     */
+        /**
+         * Parse out any command references. These need to be at the bottom of the
+         * diagram due to the way they're removed. Format is:
+         * [identifier] optional-colon optional-spaces ({json-blob})\n
+         *
+         * The JSON blob may not contain objects as values or the regex will break.
+         */
         $this->commands = [];
         preg_match_all('/^\[([^\]]+)\]:?\s+({[^}]+?})/ims', $data, $matches);
         $bound = count($matches[1]);
@@ -103,13 +103,12 @@ class ASCIIToSVG
 
         $data = preg_replace('/^\[([^\]]+)\](:?)\s+.*/ims', '', $data);
 
-        /*
-     * Treat our UTF-8 field as a grid and store each character as a point in
-     * that grid. The (0, 0) coordinate on this grid is top-left, just as it
-     * is in images.
-     */
+        /**
+         * Treat our UTF-8 field as a grid and store each character as a point in
+         * that grid. The (0, 0) coordinate on this grid is top-left, just as it
+         * is in images.
+         */
         $this->grid = explode("\n", $data);
-
         foreach ($this->grid as $k => $line) {
             $this->grid[$k] = preg_split('//u', $line, null, PREG_SPLIT_NO_EMPTY);
         }
@@ -949,7 +948,7 @@ SVG;
      * cannot be a valid polygon. It also maintains an internal list of points
      * it has already visited, and refuses to visit any point twice.
      */
-    private function wallFollow(SVGPath $path, $r, $c, int $dir, array $bucket = [], int $d = 0): void
+    private function wallFollow(SVGPath $path, $r, $c, int $dir, array $bucket = [], int $d = 0)
     {
         $d++;
         $rInc = 0;
@@ -1236,7 +1235,7 @@ SVG;
      * gives you a good method for specifying *tons* of information about the
      * object.
      */
-    private function findCommands($box)
+    private function findCommands(SVGPath $box)
     {
         $points = $box->getPoints();
         $sX = $points[0]->gridX + 1;
@@ -1303,7 +1302,7 @@ SVG;
         return null;
     }
 
-    private function isBoxEdge(string $char, ?int $dir = null): bool
+    private function isBoxEdge(?string $char, ?int $dir = null): bool
     {
         if ($dir === null) {
             return $char === '-' || $char === '|' || $char === ':' || $char === '=' || $char === '*' || $char === '+';
@@ -1317,7 +1316,7 @@ SVG;
         return false;
     }
 
-    private function isEdge(string $char, ?int $dir = null): bool
+    private function isEdge(?string $char, ?int $dir = null): bool
     {
         if ($char === 'o' || $char === 'x') {
             return true;
@@ -1341,22 +1340,22 @@ SVG;
         return false;
     }
 
-    private function isBoxCorner(string $char): bool
+    private function isBoxCorner(?string $char): bool
     {
         return $char === '.' || $char === "'" || $char === '#';
     }
 
-    private function isCorner(string $char): bool
+    private function isCorner(?string $char): bool
     {
         return $char === '.' || $char === "'" || $char === '#' || $char === '+';
     }
 
-    private function isMarker(string $char): bool
+    private function isMarker(?string $char): bool
     {
         return $char === 'v' || $char === '^' || $char === '<' || $char === '>';
     }
 
-    private function isTick(string $char): bool
+    private function isTick(?string $char): bool
     {
         return $char === 'o' || $char === 'x';
     }
