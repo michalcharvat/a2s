@@ -322,6 +322,8 @@ class SVGPathParser
      ** and Z.  Whenever one of the tokens X, Y, or Z is input to the parser
      ** but it does not parse, the type of the token is changed to ID and
      ** the parse is retried before an error is thrown.
+     *
+     * @var array<int>
      */
     static array $yyFallback = [];
 
@@ -377,6 +379,7 @@ class SVGPathParser
     ];
 
     /* For tracing reduce actions, the names of all rules are required.*/
+    /** @var array<string>  */
     static array $yyRuleName = [
         /*   0 */
         "svg_path ::= moveto_drawto_command_groups",
@@ -501,8 +504,12 @@ class SVGPathParser
      ** symbol.  The symbol can be either a terminal or nonterminal.
      ** "yymajor" is the symbol code, and "yypminor" is a pointer to
      ** the value.
+     *
+     * @param ?int $yymajor
+     * @param ?JLexToken $yypminor
+     * @return void
      */
-    private function yy_destructor($yymajor, $yypminor): void
+    private function yy_destructor(?int $yymajor, $yypminor): void
     {
         switch ($yymajor) {
             /**
@@ -623,8 +630,8 @@ class SVGPathParser
 ** return YY_NO_ACTION.
 */
     private function yy_find_reduce_action(
-        $stateno,              /* Current state number */
-        $iLookAhead     /* The look-ahead token */
+        int $stateno,              /* Current state number */
+        int $iLookAhead     /* The look-ahead token */
     ): int
     {
         $i = 0;
@@ -648,12 +655,12 @@ class SVGPathParser
      *
      * @param int $yyNewState
      * @param int $yyMajor
-     * @param null|int|array|JLexToken $yypMinor
+     * @param mixed $yypMinor
      * @return void
      */
     private function yy_shift(
-        $yyNewState,               /* The new state to shift in */
-        $yyMajor,                  /* The major token to shift in */
+        int $yyNewState,               /* The new state to shift in */
+        int $yyMajor,                  /* The major token to shift in */
         $yypMinor         /* Pointer ot the minor token to shift in */
     ): void
     {
@@ -753,7 +760,7 @@ class SVGPathParser
 ** follow the reduce.
 */
     private function yy_reduce(
-        $yyruleno                 /* Number of the rule by which to reduce */
+        int $yyruleno                 /* Number of the rule by which to reduce */
     ): void
     {
         $yygoto = 0;                     /* The next state */
@@ -930,7 +937,7 @@ class SVGPathParser
      ** The following code executes when a syntax error first occurs.
      *
      * @param int $yymajor
-     * @param ?JLexToken $yyminor
+     * @param null|JLexToken $yyminor
      * @return void
      */
     private function yy_syntax_error(
@@ -977,7 +984,7 @@ class SVGPathParser
      */
     /**
      * @param int $yymajor
-     * @param ?JLexToken $yyminor
+     * @param null|JLexToken $yyminor
      * @return void
      */
     function SVGPath(

@@ -68,9 +68,14 @@ class ASCIIToSVG
     private array $grid;
 
     private SVGGroup $svgObjects;
+
+    /**
+     * @var array<array<int|float, int|float>>
+     */
     private array $clearCorners;
 
-    private ?array $commands;
+    /** @var array<string, array<string>>  */
+    private array $commands;
 
     /* Directions for traversing lines in our grid */
     const DIR_UP = 0x1;
@@ -79,6 +84,158 @@ class ASCIIToSVG
     const DIR_RIGHT = 0x8;
     const DIR_NE = 0x10;
     const DIR_SE = 0x20;
+
+    /** @var array<string, string> */
+    public static array $colors = [
+        "indian red" => "#cd5c5c",
+        "light coral" => "#f08080",
+        "salmon" => "#fa8072",
+        "dark salmon" => "#e9967a",
+        "light salmon" => "#ffa07a",
+        "crimson" => "#dc143c",
+        "red" => "#ff0000",
+        "fire brick" => "#b22222",
+        "dark red" => "#8b0000",
+
+        "pink" => "#ffc0cb",
+        "light pink" => "#ffb6c1",
+        "hot pink" => "#ff69b4",
+        "deep pink" => "#ff1493",
+        "medium violet red" => "#c71585",
+        "pale violet red" => "#db7093",
+        "coral" => "#ff7f50",
+        "tomato" => "#ff6347",
+        "orange red" => "#ff4500",
+        "dark orange" => "#ff8c00",
+        "orange" => "#ffa500",
+
+        "gold" => "#ffd700",
+        "yellow" => "#ffff00",
+        "light yellow" => "#ffffe0",
+        "lemon chiffon" => "#fffacd",
+        "light goldenrod yellow" => "#fafad2",
+        "papaya whip" => "#ffefd5",
+        "moccasin" => "#ffe4b5",
+        "peach puff" => "#ffdab9",
+        "pale goldenrod" => "#eee8aa",
+        "khaki" => "#f0e68c",
+        "dark khaki" => "#bdb76b",
+
+        "lavender" => "#e6e6fa",
+        "thistle" => "#d8bfd8",
+        "plum" => "#dda0dd",
+        "violet" => "#ee82ee",
+        "orchid" => "#da70d6",
+        "fuchsia" => "#ff00ff",
+        "magenta" => "#ff00ff",
+        "medium orchid" => "#ba55d3",
+        "medium purple" => "#9370db",
+        "blue violet" => "#8a2be2",
+        "dark violet" => "#9400d3",
+        "dark orchid" => "#9932cc",
+        "dark magenta" => "#8b008b",
+        "purple" => "#800080",
+        "indigo" => "#4b0082",
+        "slate blue" => "#6a5acd",
+        "dark slate blue" => "#483d8b",
+
+        "green yellow" => "#adff2f",
+        "chartreuse" => "#7fff00",
+        "lawn green" => "#7cfc00",
+        "lime" => "#00ff00",
+        "lime green" => "#32cd32",
+        "pale green" => "#98fb98",
+        "light  green" => "#90ee90",
+        "medium spring green" => "#00fa9a",
+        "spring green" => "#00ff7f",
+        "medium sea green" => "#3cb371",
+        "sea green" => "#2e8b57",
+        "forest green" => "#228b22",
+        "green" => "#008000",
+        "dark green" => "#006400",
+        "yellow green" => "#9acd32",
+        "olive drab" => "#6b8e23",
+        "olive" => "#808000",
+        "dark olive green" => "#556b2f",
+        "medium aquamarine" => "#66cdaa",
+        "dark sea green" => "#8fbc8f",
+        "light sea green" => "#20b2aa",
+        "dark cyan" => "#008b8b",
+        "teal" => "#008080",
+
+        "aqua" => "#00ffff",
+        "cyan" => "#00ffff",
+        "light cyan" => "#e0ffff",
+        "pale turquoise" => "#afeeee",
+        "aquamarine" => "#7fffd4",
+        "turquoise" => "#40e0d0",
+        "medium turquoise" => "#48d1cc",
+        "dark turquoise" => "#00ced1",
+        "cadet blue" => "#5f9ea0",
+        "steel blue" => "#4682b4",
+        "light steel blue" => "#b0c4de",
+        "powder blue" => "#b0e0e6",
+        "light blue" => "#add8e6",
+        "sky blue" => "#87ceeb",
+        "light sky blue" => "#87cefa",
+        "deep sky blue" => "#00bfff",
+        "dodger blue" => "#1e90ff",
+        "cornflower blue" => "#6495ed",
+        "medium slate blue" => "#7b68ee",
+        "royal blue" => "#4169e1",
+        "blue" => "#0000ff",
+        "medium blue" => "#0000cd",
+        "dark blue" => "#00008b",
+        "navy" => "#000080",
+        "midnight blue" => "#191970",
+
+        "cornsilk" => "#fff8dc",
+        "blanched almond" => "#ffebcd",
+        "bisque" => "#ffe4c4",
+        "navajo white" => "#ffdead",
+        "wheat" => "#f5deb3",
+        "burly wood" => "#deb887",
+        "tan" => "#d2b48c",
+        "rosy brown" => "#bc8f8f",
+        "sandy brown" => "#f4a460",
+        "goldenrod" => "#daa520",
+        "dark goldenrod" => "#b8860b",
+        "peru" => "#cd853f",
+        "chocolate" => "#d2691e",
+        "saddle brown" => "#8b4513",
+        "sienna" => "#a0522d",
+        "brown" => "#a52a2a",
+        "maroon" => "#800000",
+
+        "white" => "#ffffff",
+        "snow" => "#fffafa",
+        "honeydew" => "#f0fff0",
+        "mint cream" => "#f5fffa",
+        "azure" => "#f0ffff",
+        "alice blue" => "#f0f8ff",
+        "ghost white" => "#f8f8ff",
+        "white smoke" => "#f5f5f5",
+        "seashell" => "#fff5ee",
+        "beige" => "#f5f5dc",
+        "old lace" => "#fdf5e6",
+        "floral white" => "#fffaf0",
+        "ivory" => "#fffff0",
+        "antique white" => "#faebd7",
+        "linen" => "#faf0e6",
+        "lavender blush" => "#fff0f5",
+        "misty rose" => "#ffe4e1",
+
+        "gainsboro" => "#dcdcdc",
+        "light grey" => "#d3d3d3",
+        "silver" => "#c0c0c0",
+        "dark gray" => "#a9a9a9",
+        "gray" => "#808080",
+        "dim gray" => "#696969",
+        "light slate gray" => "#778899",
+        "slate gray" => "#708090",
+        "dark slate gray" => "#2f4f4f",
+        "black" => "#000000"
+    ];
 
     public function __construct(string $data)
     {
@@ -97,10 +254,10 @@ class ASCIIToSVG
         preg_match_all('/^\[([^\]]+)\]:?\s+({[^}]+?})/ims', $data, $matches);
         $bound = count($matches[1]);
         for ($i = 0; $i < $bound; $i++) {
-            $this->commands[$matches[1][$i]] = json_decode($matches[2][$i], true);
+            $this->commands[$matches[1][$i]] = (array)json_decode($matches[2][$i], true);
         }
 
-        $data = preg_replace('/^\[([^\]]+)\](:?)\s+.*/ims', '', $data);
+        $data = (string)preg_replace('/^\[([^\]]+)\](:?)\s+.*/ims', '', $data);
 
         /**
          * Treat our UTF-8 field as a grid and store each character as a point in
@@ -117,10 +274,10 @@ class ASCIIToSVG
         $this->svgObjects = new SVGGroup();
     }
 
-    /*
-   * This is kind of a stupid and hacky way to do this, but this allows setting
-   * the default scale of one grid space on the X and Y axes.
-   */
+    /**
+     * This is kind of a stupid and hacky way to do this, but this allows setting
+     * the default scale of one grid space on the X and Y axes.
+     */
     public function setDimensionScale(int $x, int $y): void
     {
         $o = Scale::getInstance();
@@ -651,6 +808,7 @@ SVG;
                     $tP = $t->getPoint();
 
                     $maxPoint = new Point(-1, -1);
+                    /** @var array<SVGPath> $boxQueue */
                     $boxQueue = array();
 
                     for ($j = 0; $j < $bound; $j++) {
@@ -678,19 +836,20 @@ SVG;
                          * specific fill.
                          */
                         for ($j = count($boxQueue) - 1; $j >= 0; $j--) {
+                            /** @var ?string $fill */
                             $fill = $boxQueue[$j]->getOption('fill');
 
                             if ($fill === 'none' || $fill === null) {
                                 continue;
                             }
 
-                            if (substr($fill, 0, 1) !== '#') {
-                                if (!isset($GLOBALS['colors'][strtolower($fill)])) {
+                            if (!str_starts_with($fill, '#')) {
+                                if (!isset(static::$colors[strtolower($fill)])) {
                                     continue;
                                 }
-                                $fill = $GLOBALS['colors'][strtolower($fill)];
+                                $fill = static::$colors[strtolower($fill)];
                             } else {
-                                if (strlen($fill) != 4 && strlen($fill) != 7) {
+                                if (strlen($fill) !== 4 && strlen($fill) !== 7) {
                                     continue;
                                 }
                             }
@@ -742,7 +901,7 @@ SVG;
                     }
 
                     /* We found a stringy character, eat it and the rest. */
-                    $str = $this->getChar($row, $i++);
+                    $str = $this->getChar($row, $i++) ?? '';
                     while ($i < count($line) && $this->getChar($row, $i) !== ' ') {
                         $str .= $this->getChar($row, $i++);
                         /* Eat up to 1 space */
@@ -783,6 +942,7 @@ SVG;
     {
         $boxes = $this->svgObjects->getGroup('boxes');
         $lines = $this->svgObjects->getGroup('lines');
+        /** @var array<SVGText> $text */
         $text = $this->svgObjects->getGroup('text');
 
         foreach ($boxes as $obj) {
@@ -952,6 +1112,7 @@ SVG;
      * cannot be a valid polygon. It also maintains an internal list of points
      * it has already visited, and refuses to visit any point twice.
      *
+     * @param array<int|string, int> $bucket
      * @return null
      */
     private function wallFollow(SVGPath $path, int $r, int $c, int $dir, array $bucket = [], int $d = 0)

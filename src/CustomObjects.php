@@ -135,8 +135,7 @@ class CustomObjects
         if (is_readable($cacheFile) && is_readable($dir)) {
             static::$cacheTime = filemtime($cacheFile) ?: null;
 
-            if (filemtime($dir) <= filemtime($cacheFile)) {
-                $fileContent = file_get_contents($cacheFile);
+            if (($fileContent = file_get_contents($cacheFile)) && filemtime($dir) <= filemtime($cacheFile)) {
                 self::$objects = unserialize($fileContent);
                 return;
             }
