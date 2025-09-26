@@ -111,7 +111,7 @@ class ASCIIToSVG
         $explodedRows = (array)explode("\n", $data);
 
         foreach ($explodedRows as $k => $line) {
-            $this->grid[$k] = preg_split('//u', $line, null, PREG_SPLIT_NO_EMPTY);
+            $this->grid[$k] = preg_split('//u', $line, -1, PREG_SPLIT_NO_EMPTY);
         }
 
         $this->svgObjects = new SVGGroup();
