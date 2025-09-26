@@ -418,7 +418,7 @@ class SVGPath
      *
      * @param string $txf
      * @param \MichalCharvat\A2S\Point $p
-     * @param array{0: float, 1:float}|array{0: float, 1:float, 2:float} $args
+     * @param array{0: float, 1:float, 2?:float} $args
      * @return array{0: float, 1: float, 2: float}
      */
     private function applyTransformToPoint(string $txf, Point $p, array $args): array
@@ -432,6 +432,7 @@ class SVGPath
 
             case 'rotate':
                 if (count($args) > 2) {
+                    /** @var array{0: float, 1:float, 2:float} $args */
                     return $this->rotateTransform($args[0], $p->x, $p->y, $args[1], $args[2]);
                 }
                 return $this->rotateTransform($args[0], $p->x, $p->y);
