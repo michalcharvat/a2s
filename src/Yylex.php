@@ -168,6 +168,10 @@ class Yylex extends JLexBase
         /* 38 */
         self::YY_NOT_ACCEPT
     ];
+
+    /**
+     * @var array<int>
+     */
     protected static array $yy_cmap = [
         19, 19, 19, 19, 19, 19, 19, 19, 19, 18, 18, 19, 18, 18, 19, 19, 19, 19, 19, 19,
         19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 18, 19, 19, 19, 19, 19, 19, 19,
@@ -178,11 +182,17 @@ class Yylex extends JLexBase
         19, 19, 9, 19, 1, 19, 19, 19, 0, 0,
     ];
 
+    /**
+     * @var array<int>
+     */
     protected static array $yy_rmap = [
         0, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 5, 6, 7,
         8, 9, 3, 10, 11, 12, 13, 14, 15, 9, 16, 1, 17, 11, 18, 19, 12, 13, 14,
     ];
 
+    /**
+     * @var array<array<int>>
+     */
     protected static array $yy_nxt = [
         [
             1, 2, 3, 22, 4, 23, 29, 31, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 31,

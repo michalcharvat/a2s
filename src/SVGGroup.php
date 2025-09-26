@@ -64,9 +64,20 @@ namespace MichalCharvat\A2S;
 
 class SVGGroup
 {
+    /**
+     * @var array<string, array<SVGPath|SVGText>>
+     */
     private array $groups;
     private ?string $curGroup;
+
+    /**
+     * @var array<string>
+     */
     private array $groupStack;
+
+    /**
+     * @var array<string, array<string, string>>
+     */
     private array $options;
 
     public function __construct()
@@ -76,6 +87,10 @@ class SVGGroup
         $this->options = [];
     }
 
+    /**
+     * @param string $groupName
+     * @return array<SVGPath|SVGText>
+     */
     public function getGroup(string $groupName): array
     {
         return $this->groups[$groupName];
@@ -103,7 +118,7 @@ class SVGGroup
         $this->curGroup = array_pop($this->groupStack);
     }
 
-    public function addObject(object $o): void
+    public function addObject(SVGPath|SVGText $o): void
     {
         $this->groups[$this->curGroup][] = $o;
     }

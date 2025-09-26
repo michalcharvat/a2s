@@ -66,13 +66,13 @@ namespace MichalCharvat\A2S;
 
 class Point
 {
-    public ?float $gridX;
-    public ?float $gridY;
+    public float $gridX;
+    public float $gridY;
 
-    public ?int $x;
-    public ?int $y;
+    public float $x;
+    public float $y;
 
-    public ?int $flags;
+    public int $flags;
 
     const POINT = 0x1;
     const CONTROL = 0x2;

@@ -59,6 +59,9 @@ namespace MichalCharvat\A2S;
 
 class SVGPathParser
 {
+    /**
+     * @var array<string, array>
+     */
     public array $commands = [];
 
     /**
@@ -197,6 +200,9 @@ class SVGPathParser
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
+    /**
+     * @var array<int>
+     */
     static array $yy_action = [
         /*     0 */
         2, 39, 44, 45, 46, 47, 48, 49, 50, 51,
@@ -227,6 +233,8 @@ class SVGPathParser
         /*   130 */
         101, 101, 101, 56, 56, 56, 28, 38,
     ];
+
+    /** @var array<int>  */
     static array $yy_lookahead = [
         /*     0 */
         20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -259,6 +267,8 @@ class SVGPathParser
     ];
     const YY_SHIFT_USE_DFLT = -1;
     const YY_SHIFT_MAX = 33;
+
+    /** @var array<int>  */
     static array $yy_shift_ofst = [
         /*     0 */
         70, 18, 18, 74, 74, 74, 74, 74, 74, 74,
@@ -271,6 +281,8 @@ class SVGPathParser
     ];
     const YY_REDUCE_USE_DFLT = -21;
     const YY_REDUCE_MAX = 28;
+
+    /** @var array<int>  */
     static array $yy_reduce_ofst = [
         /*     0 */
         63, -20, -10, -2, -3, 12, 22, 27, 50, 3,
@@ -279,6 +291,8 @@ class SVGPathParser
         /*    20 */
         59, 62, 89, 21, 55, 23, 92, 28, 26,
     ];
+
+    /** @var array<int>  */
     static array $yy_default = [
         /*     0 */
         126, 126, 77, 126, 126, 126, 126, 126, 110, 126,
@@ -575,7 +589,7 @@ class SVGPathParser
         if ($i < 0 || $i >= count(self::$yy_action) || self::$yy_lookahead[$i] != $iLookAhead) {
             if ($iLookAhead > 0) {
                 if (isset(self::$yyFallback[$iLookAhead]) &&
-                    ($iFallback = self::$yyFallback[$iLookAhead]) != 0) {
+                    ($iFallback = self::$yyFallback[$iLookAhead]) !== 0) {
                     if ($this->yyTraceFILE) {
                         fprintf($this->yyTraceFILE, "%sFALLBACK %s => %s\n",
                             $this->yyTracePrompt, self::$yyTokenName[$iLookAhead],
@@ -609,8 +623,8 @@ class SVGPathParser
 ** return YY_NO_ACTION.
 */
     private function yy_find_reduce_action(
-        int $stateno,              /* Current state number */
-        int $iLookAhead     /* The look-ahead token */
+        $stateno,              /* Current state number */
+        $iLookAhead     /* The look-ahead token */
     ): int
     {
         $i = 0;
@@ -629,13 +643,18 @@ class SVGPathParser
         return self::$yy_action[$i];
     }
 
-    /*
-** Perform a shift action.
-*/
+    /**
+     ** Perform a shift action.
+     *
+     * @param int $yyNewState
+     * @param int $yyMajor
+     * @param null|int|array|JLexToken $yypMinor
+     * @return void
+     */
     private function yy_shift(
-        int $yyNewState,               /* The new state to shift in */
-        int $yyMajor,                  /* The major token to shift in */
-        ?JLexToken $yypMinor         /* Pointer ot the minor token to shift in */
+        $yyNewState,               /* The new state to shift in */
+        $yyMajor,                  /* The major token to shift in */
+        $yypMinor         /* Pointer ot the minor token to shift in */
     ): void
     {
         $this->yyidx++;
@@ -734,11 +753,12 @@ class SVGPathParser
 ** follow the reduce.
 */
     private function yy_reduce(
-        int $yyruleno                 /* Number of the rule by which to reduce */
+        $yyruleno                 /* Number of the rule by which to reduce */
     ): void
     {
         $yygoto = 0;                     /* The next state */
         $yyact = 0;                      /* The next action */
+        /** @var array|null $yygotominor */
         $yygotominor = null;        /* The LHS of the rule reduced */
         $yymsp = null;            /* The top of the parser's stack */
         $yysize = 0;                     /* Amount to pop the stack */
@@ -906,12 +926,16 @@ class SVGPathParser
   ** parser fails */
     }
 
-    /*
-** The following code executes when a syntax error first occurs.
-*/
+    /**
+     ** The following code executes when a syntax error first occurs.
+     *
+     * @param int $yymajor
+     * @param ?JLexToken $yyminor
+     * @return void
+     */
     private function yy_syntax_error(
-        int        $yymajor,                   /* The major type of the error token */
-        ?JLexToken $yyminor            /* The minor type of the error token */
+        int $yymajor,                   /* The major type of the error token */
+            $yyminor            /* The minor type of the error token */
     ): void
     {
     }
@@ -951,9 +975,14 @@ class SVGPathParser
      ** Outputs:
      ** None.
      */
+    /**
+     * @param int $yymajor
+     * @param ?JLexToken $yyminor
+     * @return void
+     */
     function SVGPath(
-        int        $yymajor,                 /* The major token code number */
-        ?JLexToken $yyminor = null           /* The value for the token */
+        $yymajor,                 /* The major token code number */
+        $yyminor = null           /* The value for the token */
     ): void
     {
         $yyact = 0;            /* The parser action. */
@@ -996,6 +1025,7 @@ class SVGPathParser
                 if ($this->yyTraceFILE) {
                     fprintf($this->yyTraceFILE, "%sSyntax Error!\n", $this->yyTracePrompt);
                 }
+                /** @phpstan-ignore-next-line */
                 if (self::YYERRORSYMBOL) {
                     /** A syntax error has occurred.
                      ** The response to an error depends upon whether or not the

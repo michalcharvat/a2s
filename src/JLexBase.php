@@ -71,7 +71,7 @@ class JLexBase
      * @var resource
      */
     protected $yy_reader;
-    protected ?string $yy_buffer;
+    protected string $yy_buffer;
     protected int $yy_buffer_read;
     protected int $yy_buffer_index;
     protected int $yy_buffer_start;
@@ -136,7 +136,7 @@ class JLexBase
                 return $this->YY_EOF;
             }
             $this->yy_buffer .= $data;
-            $this->yy_buffer_read .= strlen($data);
+            $this->yy_buffer_read += strlen($data);
         }
 
         while ($this->yy_buffer_index >= $this->yy_buffer_read) {
@@ -145,7 +145,7 @@ class JLexBase
                 return $this->YY_EOF;
             }
             $this->yy_buffer .= $data;
-            $this->yy_buffer_read .= strlen($data);
+            $this->yy_buffer_read += strlen($data);
         }
         return ord($this->yy_buffer[$this->yy_buffer_index++]);
     }
@@ -196,8 +196,8 @@ class JLexBase
         #echo "yy_to_mark: setting buffer index to ", $this->yy_buffer_end, "\n";
         $this->yy_buffer_index = $this->yy_buffer_end;
         $this->yy_at_bol = ($this->yy_buffer_end > $this->yy_buffer_start) &&
-            ("\r" == $this->yy_buffer[$this->yy_buffer_end - 1] ||
-                "\n" == $this->yy_buffer[$this->yy_buffer_end - 1] ||
+            ("\r" === $this->yy_buffer[$this->yy_buffer_end - 1] ||
+                "\n" === $this->yy_buffer[$this->yy_buffer_end - 1] ||
                 2028 /* unicode LS */ == $this->yy_buffer[$this->yy_buffer_end - 1] ||
                 2029 /* unicode PS */ == $this->yy_buffer[$this->yy_buffer_end - 1]);
     }
@@ -213,6 +213,9 @@ class JLexBase
         return $this->yy_buffer_end - $this->yy_buffer_start;
     }
 
+    /**
+     * @var array<string>
+     */
     static array $yy_error_string = [
         'INTERNAL' => "Error: internal error.\n",
         'MATCH' => "Error: Unmatched input.\n"

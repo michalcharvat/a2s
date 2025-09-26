@@ -63,6 +63,9 @@ namespace MichalCharvat\A2S;
 
 class SVGText
 {
+    /**
+     * @var array<string, string>
+     */
     private array $options;
     private ?string $string;
     private Point $point;
@@ -88,6 +91,18 @@ class SVGText
         $this->point = new Point($x, $y);
         $this->name = self::$id++;
         $this->options = [];
+    }
+
+    /**
+     * Set options as a JSON string. Specified as a merge operation so that it
+     * can be called after an individual setOption call.
+     *
+     * @param array<string, string> $opt
+     * @return void
+     */
+    public function setOptions(array $opt): void
+    {
+        $this->options = array_merge($this->options, $opt);
     }
 
     public function setOption(string $opt, string $val): void

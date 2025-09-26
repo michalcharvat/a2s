@@ -63,16 +63,20 @@ namespace MichalCharvat\A2S;
 class SVGPath
 {
     /** @var array<string, string> */
-    private ?array $options;
+    private array $options;
 
-    /** @var array<Point>|null  */
-    private ?array $points;
-    private ?array $ticks;
-    private ?int $flags;
+    /** @var array<Point> */
+    private array $points;
 
-    /** @var array<SVGText>|null */
-    private ?array $text;
-    private ?int $name;
+    /**
+     * @var array<Point>
+     */
+    private array $ticks;
+    private int $flags;
+
+    /** @var array<SVGText> */
+    private array $text;
+    private int $name;
 
     private static int $id = 0;
 
@@ -139,7 +143,7 @@ class SVGPath
         array_pop($this->points);
     }
 
-    public function addPoint(int $x, int $y, int $flags = Point::POINT): bool
+    public function addPoint(float $x, float $y, int $flags = Point::POINT): bool
     {
         $p = new Point($x, $y);
 
@@ -173,8 +177,10 @@ class SVGPath
 
     /**
      * It's useful to be able to know the points in a shape.
+     *
+     * @return array<Point>
      */
-    public function getPoints(): ?array
+    public function getPoints(): array
     {
         return $this->points;
     }
@@ -184,14 +190,14 @@ class SVGPath
      * and this depends on the orientation of the line. Due to the way the line
      * parser works, we may have to use an inverted representation.
      */
-    public function addMarker(int $x, int $y, int $t): void
+    public function addMarker(float $x, float $y, int $t): void
     {
         $p = new Point($x, $y);
         $p->flags |= $t;
         $this->points[] = $p;
     }
 
-    public function addTick(int $x, int $y, int $t): void
+    public function addTick(float $x, float $y, int $t): void
     {
         $p = new Point($x, $y);
         $p->flags |= $t;
@@ -211,6 +217,9 @@ class SVGPath
         $this->text[] = $t;
     }
 
+    /**
+     * @return array<SVGText>
+     */
     public function getText(): array
     {
         return $this->text;
@@ -221,10 +230,13 @@ class SVGPath
         return $this->name;
     }
 
-    /*
-   * Set options as a JSON string. Specified as a merge operation so that it
-   * can be called after an individual setOption call.
-   */
+    /**
+     * Set options as a JSON string. Specified as a merge operation so that it
+     * can be called after an individual setOption call.
+     *
+     * @param array<string, string> $opt
+     * @return void
+     */
     public function setOptions(array $opt): void
     {
         $this->options = array_merge($this->options, $opt);
@@ -254,7 +266,7 @@ class SVGPath
      * same shape, we need to do a full point-in-polygon test. This algorithm
      * seems like the standard one. See: http://alienryderflex.com/polygon/
      */
-    public function hasPoint(int $x, int $y): bool
+    public function hasPoint(float $x, float $y): bool
     {
         if ($this->isClosed() === false) {
             return false;
@@ -292,8 +304,13 @@ class SVGPath
      * transformation matrix represents, see:
      *
      * http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
+     *
+     * @param array<int, array<int, float|int>> $matrix
+     * @param float $x
+     * @param float $y
+     * @return array{0: float, 1: float, 2: float}
      */
-    private function matrixTransform(array $matrix, int $x, int $y): array
+    private function matrixTransform(array $matrix, float $x, float $y): array
     {
         $xyMat = array(array($x), array($y), array(1));
         $newXY = array(array());
@@ -317,8 +334,10 @@ class SVGPath
     /**
      * Translate the X and Y coordinates. tX and tY specify the distance to
      * transform.
+     *
+     * @return array{0: float, 1: float, 2: float}
      */
-    private function translateTransform(int $tX, int $tY, int $x, int $y): array
+    private function translateTransform(float $tX, float $tY, float $x, float $y): array
     {
         $matrix = array(array(1, 0, $tX), array(0, 1, $tY), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
@@ -329,21 +348,26 @@ class SVGPath
      * Y coordinates. One unit in the new coordinate system equals $s[XY] units
      * in the old system. Thus, if you want to double the size of an object on
      * both axes, you sould call scaleTransform(0.5, 0.5, $x, $y)
+     *
+     * @return array{0: float, 1: float, 2: float}
      */
-    private function scaleTransform(int $sX, int $sY, int $x, int $y): array
+    private function scaleTransform(float $sX, float $sY, float $x, float $y): array
     {
         $matrix = array(array($sX, 0, 0), array(0, $sY, 0), array(0, 0, 1));
         return $this->matrixTransform($matrix, $x, $y);
     }
 
-    /*
-   * Rotate the coordinates around the center point cX and cY. If these
-   * are not specified, the coordinate is rotated around 0,0. The angle
-   * is specified in degrees.
-   */
-    private function rotateTransform(float $angle, int $x, int $y, int $cX = 0, int $cY = 0): array
+    /**
+     * Rotate the coordinates around the center point cX and cY. If these
+     * are not specified, the coordinate is rotated around 0,0. The angle
+     * is specified in degrees.
+     *
+     * @return array{0: float, 1: float, 2: float}
+     */
+    private function rotateTransform(float $angle, float $x, float $y, float $cX = 0, float $cY = 0): array
     {
         $angle *= (M_PI / 180);
+        /** @phpstan-ignore-next-line */
         if ($cX !== 0 || $cY !== 0) {
             [$x, $y] = $this->translateTransform($cX, $cY, $x, $y);
         }
@@ -353,6 +377,7 @@ class SVGPath
             array(0, 0, 1));
         $ret = $this->matrixTransform($matrix, $x, $y);
 
+        /** @phpstan-ignore-next-line */
         if ($cX !== 0 || $cY !== 0) {
             [$x, $y] = $this->translateTransform(-$cX, -$cY, $ret[0], $ret[1]);
             $ret[0] = $x;
@@ -365,8 +390,10 @@ class SVGPath
     /**
      * Skews along the X axis at specified angle. The angle is specified in
      * degrees.
+     *
+     * @return array{0: float, 1: float, 2: float}
      */
-    private function skewXTransform(float $angle, int $x, int $y): array
+    private function skewXTransform(float $angle, float $x, float $y): array
     {
         $angle *= (M_PI / 180);
         $matrix = array(array(1, tan($angle), 0), array(0, 1, 0), array(0, 0, 1));
@@ -376,8 +403,10 @@ class SVGPath
     /**
      * Skews along the Y axis at specified angle. The angle is specified in
      * degrees.
+     *
+     * @return array{0: float, 1: float, 2: float}
      */
-    private function skewYTransform(float $angle, int $x, int $y): array
+    private function skewYTransform(float $angle, float $x, float $y): array
     {
         $angle *= (M_PI / 180);
         $matrix = array(array(1, 0, 0), array(tan($angle), 1, 0), array(0, 0, 1));
@@ -386,6 +415,11 @@ class SVGPath
 
     /**
      * Apply a transformation to a point $p.
+     *
+     * @param string $txf
+     * @param \MichalCharvat\A2S\Point $p
+     * @param array{0: float, 1:float}|array{0: float, 1:float, 2:float} $args
+     * @return array{0: float, 1: float, 2: float}
      */
     private function applyTransformToPoint(string $txf, Point $p, array $args): array
     {
@@ -397,7 +431,7 @@ class SVGPath
                 return $this->scaleTransform($args[0], $args[1], $p->x, $p->y);
 
             case 'rotate':
-                if (count($args) > 1) {
+                if (count($args) > 2) {
                     return $this->rotateTransform($args[0], $p->x, $p->y, $args[1], $args[2]);
                 }
                 return $this->rotateTransform($args[0], $p->x, $p->y);
@@ -412,10 +446,15 @@ class SVGPath
         throw new \RuntimeException('Invalid transform');
     }
 
-    /*
-   * Apply the transformation function $txf to all coordinates on path $p
-   * providing $args as arguments to the transformation function.
-   */
+    /**
+     * Apply the transformation function $txf to all coordinates on path $p
+     * providing $args as arguments to the transformation function.
+     */
+    /**
+     * @param string $txf
+     * @param array{width: string, height: string, path: array<array<string>>} $p
+     * @param array{0: float, 1:float}|array{0: float, 1:float, 2:float} $args
+     */
     private function applyTransformToPath(string $txf, array &$p, array $args): void
     {
         $pathCmds = count($p['path']);
@@ -437,8 +476,8 @@ class SVGPath
 
                 case 'm':
                     if ($prevType != null) {
-                        $curPoint->x += $cmd[1];
-                        $curPoint->y += $cmd[2];
+                        $curPoint->x += (float)$cmd[1];
+                        $curPoint->y += (float)$cmd[2];
 
                         list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                         $curPoint->x = $x;
@@ -447,8 +486,8 @@ class SVGPath
                         $cmd[1] = $x;
                         $cmd[2] = $y;
                     } else {
-                        $curPoint->x = $cmd[1];
-                        $curPoint->y = $cmd[2];
+                        $curPoint->x = (float)$cmd[1];
+                        $curPoint->y = (float)$cmd[2];
 
                         list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                         $curPoint->x = $x;
@@ -462,8 +501,8 @@ class SVGPath
                     break;
 
                 case 'M':
-                    $curPoint->x = $cmd[1];
-                    $curPoint->y = $cmd[2];
+                    $curPoint->x = (float)$cmd[1];
+                    $curPoint->y = (float)$cmd[2];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -478,8 +517,8 @@ class SVGPath
                     break;
 
                 case 'l':
-                    $curPoint->x += $cmd[1];
-                    $curPoint->y += $cmd[2];
+                    $curPoint->x += (float)$cmd[1];
+                    $curPoint->y += (float)$cmd[2];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -491,8 +530,8 @@ class SVGPath
                     break;
 
                 case 'L':
-                    $curPoint->x = $cmd[1];
-                    $curPoint->y = $cmd[2];
+                    $curPoint->x = (float)$cmd[1];
+                    $curPoint->y = (float)$cmd[2];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -504,7 +543,7 @@ class SVGPath
                     break;
 
                 case 'v':
-                    $curPoint->y += $cmd[1];
+                    $curPoint->y += (float)$cmd[1];
                     $curPoint->x += 0;
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
@@ -516,7 +555,7 @@ class SVGPath
                     break;
 
                 case 'V':
-                    $curPoint->y = $cmd[1];
+                    $curPoint->y = (float)$cmd[1];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -527,7 +566,7 @@ class SVGPath
                     break;
 
                 case 'h':
-                    $curPoint->x += $cmd[1];
+                    $curPoint->x += (float)$cmd[1];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -538,7 +577,7 @@ class SVGPath
                     break;
 
                 case 'H':
-                    $curPoint->x = $cmd[1];
+                    $curPoint->x = (float)$cmd[1];
 
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
@@ -550,20 +589,20 @@ class SVGPath
 
                 case 'c':
                     $tP = new Point(0, 0);
-                    $tP->x = $curPoint->x + $cmd[1];
-                    $tP->y = $curPoint->y + $cmd[2];
+                    $tP->x = $curPoint->x + (float)$cmd[1];
+                    $tP->y = $curPoint->y + (float)$cmd[2];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $tP, $args);
                     $cmd[1] = $x;
                     $cmd[2] = $y;
 
-                    $tP->x = $curPoint->x + $cmd[3];
-                    $tP->y = $curPoint->y + $cmd[4];
+                    $tP->x = $curPoint->x + (float)$cmd[3];
+                    $tP->y = $curPoint->y + (float)$cmd[4];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $tP, $args);
                     $cmd[3] = $x;
                     $cmd[4] = $y;
 
-                    $curPoint->x += $cmd[5];
-                    $curPoint->y += $cmd[6];
+                    $curPoint->x += (float)$cmd[5];
+                    $curPoint->y += (float)$cmd[6];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
 
                     $curPoint->x = $x;
@@ -573,20 +612,20 @@ class SVGPath
 
                     break;
                 case 'C':
-                    $curPoint->x = $cmd[1];
-                    $curPoint->y = $cmd[2];
+                    $curPoint->x = (float)$cmd[1];
+                    $curPoint->y = (float)$cmd[2];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $cmd[1] = $x;
                     $cmd[2] = $y;
 
-                    $curPoint->x = $cmd[3];
-                    $curPoint->y = $cmd[4];
+                    $curPoint->x = (float)$cmd[3];
+                    $curPoint->y = (float)$cmd[4];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $cmd[3] = $x;
                     $cmd[4] = $y;
 
-                    $curPoint->x = $cmd[5];
-                    $curPoint->y = $cmd[6];
+                    $curPoint->x = (float)$cmd[5];
+                    $curPoint->y = (float)$cmd[6];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
 
                     $curPoint->x = $x;
@@ -609,20 +648,20 @@ class SVGPath
                     break;
 
                 case 'A':
-                    /*
-         * This radius is relative to the start and end points, so it makes
-         * sense to scale, rotate, or skew it, but not translate it.
-         */
-                    if ($txf != 'translate') {
-                        $curPoint->x = $cmd[1];
-                        $curPoint->y = $cmd[2];
+                    /**
+                     * This radius is relative to the start and end points, so it makes
+                     * sense to scale, rotate, or skew it, but not translate it.
+                     */
+                    if ($txf !== 'translate') {
+                        $curPoint->x = (float)$cmd[1];
+                        $curPoint->y = (float)$cmd[2];
                         list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                         $cmd[1] = $x;
                         $cmd[2] = $y;
                     }
 
-                    $curPoint->x = $cmd[6];
-                    $curPoint->y = $cmd[7];
+                    $curPoint->x = (float)$cmd[6];
+                    $curPoint->y = (float)$cmd[7];
                     list ($x, $y) = $this->applyTransformToPoint($txf, $curPoint, $args);
                     $curPoint->x = $x;
                     $curPoint->y = $y;
@@ -636,6 +675,7 @@ class SVGPath
 
     public function render(): string
     {
+        /** @var Point $startPoint */
         $startPoint = array_shift($this->points);
         $endPoint = $this->points[count($this->points) - 1];
 

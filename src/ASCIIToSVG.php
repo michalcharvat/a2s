@@ -61,6 +61,10 @@ class ASCIIToSVG
 {
     public bool $blurDropShadow = true;
     public string $fontFamily = "Consolas,Monaco,Anonymous Pro,Anonymous,Bitstream Sans Mono,monospace";
+
+    /**
+     * @var array<int, array<int, string>>
+     */
     private array $grid;
 
     private SVGGroup $svgObjects;
@@ -103,8 +107,10 @@ class ASCIIToSVG
          * that grid. The (0, 0) coordinate on this grid is top-left, just as it
          * is in images.
          */
-        $this->grid = (array)explode("\n", $data);
-        foreach ($this->grid as $k => $line) {
+        /** @var array<int, string> $explodedRows */
+        $explodedRows = (array)explode("\n", $data);
+
+        foreach ($explodedRows as $k => $line) {
             $this->grid[$k] = preg_split('//u', $line, null, PREG_SPLIT_NO_EMPTY);
         }
 
@@ -271,11 +277,11 @@ SVG;
                             $pPoints = count($pP);
                             $shared = 0;
 
-                            /*
-               * If the boxes don't have the same number of edges, they
-               * obviously cannot be the same box.
-               */
-                            if (count($bP) != $pPoints) {
+                            /**
+                             * If the boxes don't have the same number of edges, they
+                             * obviously cannot be the same box.
+                             */
+                            if (count($bP) !== $pPoints) {
                                 continue;
                             }
 
@@ -313,11 +319,11 @@ SVG;
             }
         }
 
-        /*
-     * Once we've found all the boxes, we want to remove them from the grid so
-     * that they don't confuse the line parser. However, we don't remove any
-     * corner characters because these might be shared by lines.
-     */
+        /**
+         * Once we've found all the boxes, we want to remove them from the grid so
+         * that they don't confuse the line parser. However, we don't remove any
+         * corner characters because these might be shared by lines.
+         */
         foreach ($this->svgObjects->getGroup('boxes') as $box) {
             $this->clearObject($box);
         }
@@ -1054,6 +1060,8 @@ SVG;
                 }
             }
 
+            $cMod = 0;
+            $rMod = 0;
             if ($newDir !== false) {
                 if ($newDir === self::DIR_RIGHT || $newDir === self::DIR_LEFT) {
                     $cMod = ($newDir === self::DIR_RIGHT) ? 1 : -1;
@@ -1065,6 +1073,7 @@ SVG;
 
                 $bucket[$key] |= $newDir;
                 $this->wallFollow($path, $r + $rMod, $c + $cMod, $newDir, $bucket, $d);
+                /** @phpstan-ignore-next-line */
                 if ($path->isClosed()) {
                     return null;
                 }
@@ -1084,6 +1093,7 @@ SVG;
                 ($this->isBoxEdge($w, self::DIR_LEFT) || $this->isBoxCorner($w))) {
                 $bucket[$key] |= self::DIR_LEFT;
                 $this->wallFollow($path, $r, $c - 1, self::DIR_LEFT, $bucket, $d);
+                /** @phpstan-ignore-next-line */
                 if ($path->isClosed()) {
                     return null;
                 }
@@ -1092,6 +1102,7 @@ SVG;
                 ($this->isBoxEdge($e, self::DIR_RIGHT) || $this->isBoxCorner($e))) {
                 $bucket[$key] |= self::DIR_RIGHT;
                 $this->wallFollow($path, $r, $c + 1, self::DIR_RIGHT, $bucket, $d);
+                /** @phpstan-ignore-next-line */
                 if ($path->isClosed()) {
                     return null;
                 }
@@ -1103,6 +1114,7 @@ SVG;
                     /* We can't turn into another bottom edge. */
                     $bucket[$key] |= self::DIR_UP;
                     $this->wallFollow($path, $r - 1, $c, self::DIR_UP, $bucket, $d);
+                    /** @phpstan-ignore-next-line */
                     if ($path->isClosed()) {
                         return null;
                     }
@@ -1115,6 +1127,7 @@ SVG;
                     /* We can't turn into another top edge. */
                     $bucket[$key] |= self::DIR_DOWN;
                     $this->wallFollow($path, $r + 1, $c, self::DIR_DOWN, $bucket, $d);
+                    /** @phpstan-ignore-next-line */
                     if ($path->isClosed()) {
                         return null;
                     }
@@ -1166,6 +1179,7 @@ SVG;
             if ($nP != null && $p->gridX === $nP->gridX) {
                 /* ...traverse the vertical line from the minimum to maximum points */
                 $maxY = max($p->gridY, $nP->gridY);
+                /** @var float $j */
                 for ($j = min($p->gridY, $nP->gridY); $j <= $maxY; $j++) {
                     $char = $this->getChar($j, $p->gridX);
 
@@ -1260,7 +1274,7 @@ SVG;
                     if (isset($this->commands[$ref]['a2s:label'])) {
                         $label = $this->commands[$ref]['a2s:label'];
                     } else {
-                        $label = null;
+                        $label = ''; //TODO - was null
                     }
 
                     $len = strlen($ref) + 2;
@@ -1293,8 +1307,11 @@ SVG;
         }
     }
 
-    private function getChar(int $row, int $col): ?string
+    private function getChar(int|float $row, int|float $col): ?string
     {
+        $row = (int)$row;
+        $col = (int)$col;
+
         if (isset($this->grid[$row][$col])) {
             return $this->grid[$row][$col];
         }
